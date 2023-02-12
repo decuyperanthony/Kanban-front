@@ -1,0 +1,11 @@
+.vscode
+bin
+build
+nginx
+node_modules
+public
+dist
+coverage
+*.css
+*.svg
+src/react-app-env.d.ts
