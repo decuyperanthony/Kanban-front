@@ -19,7 +19,10 @@ const useKanban = () => {
   const [kanbans, setKanbans] = useState<Kanban[]>([]);
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [updatedKanban, setUpdatedKanban] = useState({ name: '', status: '' });
+  const [updatedKanban, setUpdatedKanban] = useState({
+    name: '',
+    status: 'OPEN',
+  });
 
   const onResetUpdatedKanbanState = () =>
     setUpdatedKanban({ name: '', status: '' });
