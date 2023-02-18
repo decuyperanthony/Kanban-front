@@ -10,6 +10,11 @@ type ResPokeAPI = {
   data: Kanban[];
 };
 
+const initState = {
+  name: '',
+  status: 'OPEN',
+};
+
 const useKanban = () => {
   const { data: res, isLoading: loading } = useSWR<ResPokeAPI>(
     KANBAN_URL,
@@ -19,13 +24,9 @@ const useKanban = () => {
   const [kanbans, setKanbans] = useState<Kanban[]>([]);
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [updatedKanban, setUpdatedKanban] = useState({
-    name: '',
-    status: 'OPEN',
-  });
+  const [updatedKanban, setUpdatedKanban] = useState(initState);
 
-  const onResetUpdatedKanbanState = () =>
-    setUpdatedKanban({ name: '', status: '' });
+  const onResetUpdatedKanbanState = () => setUpdatedKanban(initState);
 
   const addKanban = async () => {
     if (updatedKanban.name === '') return;
