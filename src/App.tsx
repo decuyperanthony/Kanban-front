@@ -10,6 +10,7 @@ import {
   Text,
   useBoolean,
 } from '@chakra-ui/react';
+
 import {
   AddCircleSvgIcon,
   ArrowLeftSvgIcon,
@@ -24,8 +25,9 @@ function App() {
     updatedKanban,
     isLoading,
     addKanban,
-    updateKanban,
     deleteKanban,
+    updateKanban,
+    updateKanbanStatus,
     onChange,
     setUpdatedKanban,
   } = useKanban();
@@ -57,18 +59,18 @@ function App() {
                 <ArrowLeftSvgIcon fill="#122" />
               </Box>
               <Input value={updatedKanban.name} onChange={(e) => onChange(e)} />
-              <Button onClick={addKanban}>valider</Button>
+              <Button onClick={addKanban}>OK</Button>
             </>
           ) : (
             <>
-              <p>Ajouter un mémo</p>
-              <Box cursor="pointer" onClick={setIsAdding.on}>
+              <p>Add note</p>
+              <Box px={4} cursor="pointer" onClick={setIsAdding.on}>
                 <AddCircleSvgIcon fill="#122" />
               </Box>
             </>
           )}
         </HStack>
-        {kanbans?.map(({ name, _id }, index) => (
+        {kanbans?.map(({ name, _id, status }, index) => (
           <HStack
             justify="space-between"
             p={3}
@@ -79,6 +81,7 @@ function App() {
             }
             borderColor={'blue.500'}
             key={_id}
+            bg={status === 'DONE' ? 'blue.200' : undefined}
           >
             <HStack w={'100%'} align="center" minH={'40px'}>
               {isEditing && editKanbanId === _id ? (
@@ -95,7 +98,7 @@ function App() {
                     />
                   </Box>
                   <Button flex={1} onClick={setIsEditing.off} size={'sm'}>
-                    Annuler
+                    Cancel
                   </Button>
                 </HStack>
               ) : (
@@ -107,7 +110,7 @@ function App() {
                   onClick={() => {
                     setIsEditing.on();
                     setIsAdding.off();
-                    setUpdatedKanban({ name });
+                    setUpdatedKanban({ name, status });
                     setEditKanbanId(_id);
                   }}
                 >
@@ -115,6 +118,14 @@ function App() {
                 </Text>
               )}
             </HStack>
+
+            <Button
+              onClick={() => updateKanbanStatus(_id, name, status)}
+              variant="outline"
+            >
+              {status === 'DONE' ? 'ReOpen' : 'Done'}
+            </Button>
+
             <Box cursor="pointer" onClick={() => deleteKanban(_id)}>
               <DeleteSvgIcon fill="#122" />
             </Box>
