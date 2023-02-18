@@ -72,11 +72,13 @@ function App() {
             borderColor={'blue.500'}
             key={_id}
           >
-            <Box>
+            <HStack w={'100%'} align="center" minH={'40px'}>
               {isEditing && editKanbanId === _id ? (
-                <HStack spacing={4}>
-                  <Input value={name} size="sm" />
-                  <Button onClick={setIsEditing.off} size={'sm'}>
+                <HStack w={'100%'} spacing={4}>
+                  <Box flex={6}>
+                    <Input value={name} size="sm" />
+                  </Box>
+                  <Button flex={1} onClick={setIsEditing.off} size={'sm'}>
                     Annuler
                   </Button>
                 </HStack>
@@ -94,7 +96,7 @@ function App() {
                   {name}
                 </Text>
               )}
-            </Box>
+            </HStack>
             <Box cursor="pointer" onClick={() => deleteKanban(_id)}>
               <DeleteSvgIcon fill="#122" />
             </Box>
