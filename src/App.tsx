@@ -7,6 +7,7 @@ import {
   HStack,
   Input,
   Stack,
+  Text,
   useBoolean,
 } from '@chakra-ui/react';
 import {
@@ -15,11 +16,14 @@ import {
   DeleteSvgIcon,
 } from './assets/svg/icons';
 import useKanban from './hooks/useKanban';
+import { useState } from 'react';
 
 function App() {
   const { kanbans, addKanban, onChange, newKanban, deleteKanban, isLoading } =
     useKanban();
   const [isAdding, setIsAdding] = useBoolean();
+  const [isEditing, setIsEditing] = useBoolean();
+  const [editKanbanId, setEditKanbanId] = useState('');
 
   return (
     <ChakraProvider>
@@ -56,15 +60,41 @@ function App() {
             </>
           )}
         </HStack>
-        {kanbans?.map(({ name, _id }) => (
+        {kanbans?.map(({ name, _id }, index) => (
           <HStack
             justify="space-between"
             p={3}
             border="1px solid"
+            borderTop={index === 0 ? '2px solid' : undefined}
+            borderBottom={
+              index === kanbans.length - 1 ? '2px solid' : undefined
+            }
             borderColor={'blue.500'}
             key={_id}
           >
-            <p>{name}</p>
+            <Box>
+              {isEditing && editKanbanId === _id ? (
+                <HStack spacing={4}>
+                  <Input value={name} size="sm" />
+                  <Button onClick={setIsEditing.off} size={'sm'}>
+                    Annuler
+                  </Button>
+                </HStack>
+              ) : (
+                <Text
+                  px={1}
+                  borderRadius="sm"
+                  _hover={{ bg: 'gray.100' }}
+                  cursor="pointer"
+                  onClick={() => {
+                    setIsEditing.on();
+                    setEditKanbanId(_id);
+                  }}
+                >
+                  {name}
+                </Text>
+              )}
+            </Box>
             <Box cursor="pointer" onClick={() => deleteKanban(_id)}>
               <DeleteSvgIcon fill="#122" />
             </Box>
