@@ -3,8 +3,10 @@ import {
   Box,
   Button,
   ChakraProvider,
+  CircularProgress,
   HStack,
   Input,
+  Stack,
   useBoolean,
 } from '@chakra-ui/react';
 import {
@@ -15,12 +17,27 @@ import {
 import useKanban from './hooks/useKanban';
 
 function App() {
-  const { data, addKanban, onChange, newKanban, deleteKanban } = useKanban();
+  const { kanbans, addKanban, onChange, newKanban, deleteKanban, isLoading } =
+    useKanban();
   const [isAdding, setIsAdding] = useBoolean();
 
   return (
     <ChakraProvider>
-      <div className="App">
+      <Box className="App" pos={'relative'}>
+        {isLoading && (
+          <Stack
+            sx={{ backdropFilter: 'blur(3px)' }}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            height={'100%'}
+            position="absolute"
+            width="100%"
+            zIndex={100}
+          >
+            <CircularProgress isIndeterminate />
+          </Stack>
+        )}
         <HStack minH="64px" p={3} spacing={3} justify="center">
           {isAdding ? (
             <>
@@ -39,7 +56,7 @@ function App() {
             </>
           )}
         </HStack>
-        {data?.map(({ name, _id }) => (
+        {kanbans?.map(({ name, _id }) => (
           <HStack
             justify="space-between"
             p={3}
@@ -53,7 +70,7 @@ function App() {
             </Box>
           </HStack>
         ))}
-      </div>
+      </Box>
     </ChakraProvider>
   );
 }
