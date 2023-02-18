@@ -19,8 +19,16 @@ import useKanban from './hooks/useKanban';
 import { useState } from 'react';
 
 function App() {
-  const { kanbans, addKanban, onChange, newKanban, deleteKanban, isLoading } =
-    useKanban();
+  const {
+    kanbans,
+    updatedKanban,
+    isLoading,
+    addKanban,
+    updateKanban,
+    deleteKanban,
+    onChange,
+    setUpdatedKanban,
+  } = useKanban();
   const [isAdding, setIsAdding] = useBoolean();
   const [isEditing, setIsEditing] = useBoolean();
   const [editKanbanId, setEditKanbanId] = useState('');
@@ -48,7 +56,7 @@ function App() {
               <Box cursor="pointer" onClick={setIsAdding.off}>
                 <ArrowLeftSvgIcon fill="#122" />
               </Box>
-              <Input value={newKanban.name} onChange={(e) => onChange(e)} />
+              <Input value={updatedKanban.name} onChange={(e) => onChange(e)} />
               <Button onClick={addKanban}>valider</Button>
             </>
           ) : (
@@ -76,7 +84,15 @@ function App() {
               {isEditing && editKanbanId === _id ? (
                 <HStack w={'100%'} spacing={4}>
                   <Box flex={6}>
-                    <Input value={name} size="sm" />
+                    <Input
+                      onBlur={() => {
+                        updateKanban(_id);
+                        setIsEditing.off();
+                      }}
+                      onChange={(e) => onChange(e)}
+                      value={updatedKanban.name}
+                      size="sm"
+                    />
                   </Box>
                   <Button flex={1} onClick={setIsEditing.off} size={'sm'}>
                     Annuler
@@ -90,6 +106,8 @@ function App() {
                   cursor="pointer"
                   onClick={() => {
                     setIsEditing.on();
+                    setIsAdding.off();
+                    setUpdatedKanban({ name });
                     setEditKanbanId(_id);
                   }}
                 >

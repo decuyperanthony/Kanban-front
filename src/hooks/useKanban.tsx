@@ -11,24 +11,24 @@ type ResPokeAPI = {
 };
 
 const useKanban = () => {
-  const {
-    data: res,
-    error,
-    isLoading: loading,
-  } = useSWR<ResPokeAPI>(KANBAN_URL, fetcher);
+  const { data: res, isLoading: loading } = useSWR<ResPokeAPI>(
+    KANBAN_URL,
+    fetcher
+  );
 
   const [kanbans, setKanbans] = useState<Kanban[]>([]);
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [newKanban, setNewKanban] = useState({ name: '' });
+  const [updatedKanban, setUpdatedKanban] = useState({ name: '' });
 
   const addKanban = async () => {
     setIsFetching.on();
     try {
-      const res = await instance().post('/kanban', newKanban);
+      const res = await instance().post('/kanban', updatedKanban);
       const updatedKanbans = [...kanbans];
       updatedKanbans.push(res.data.data);
       setKanbans(updatedKanbans);
+      setUpdatedKanban({ name: '' });
     } catch (error) {
       // todo trait error
       console.log('error :>> ', error);
@@ -50,9 +50,29 @@ const useKanban = () => {
       setIsFetching.off();
     }
   };
-  console.log('isFecthing', isFecthing);
+
+  const updateKanban = async (kanbanId: string) => {
+    setIsFetching.on();
+    try {
+      await instance().put('/kanban/' + kanbanId, updatedKanban);
+
+      setKanbans(
+        kanbans?.map((kanban) =>
+          kanban._id === kanbanId
+            ? { ...kanban, name: updatedKanban.name }
+            : { ...kanban }
+        )
+      );
+    } catch (error) {
+      // todo trait error
+      console.log('error :>> ', error);
+    } finally {
+      setIsFetching.off();
+    }
+  };
+
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setNewKanban({ name: e.target.value });
+    setUpdatedKanban({ name: e.target.value });
   };
 
   const isLoading = loading || isFecthing;
@@ -64,14 +84,24 @@ const useKanban = () => {
   return useMemo(() => {
     return {
       kanbans,
-      error,
+      updatedKanban,
       isLoading,
       addKanban,
-      onChange,
-      newKanban,
       deleteKanban,
+      updateKanban,
+      onChange,
+      setUpdatedKanban,
     };
-  }, [kanbans, error, isLoading, addKanban, onChange, newKanban, deleteKanban]);
+  }, [
+    kanbans,
+    updatedKanban,
+    isLoading,
+    addKanban,
+    deleteKanban,
+    updateKanban,
+    onChange,
+    setUpdatedKanban,
+  ]);
 };
 
 export default useKanban;
