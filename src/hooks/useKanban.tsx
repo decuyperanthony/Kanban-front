@@ -1,11 +1,11 @@
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import fetcher, { instance } from '../service/config';
 import { Kanban, KanbanStatus } from '../Models/kanban';
 import { KANBAN_URL } from '../service/endPoint';
 import { useBoolean } from '@chakra-ui/react';
 
-type ResPokeAPI = {
+type ResKanbanAPI = {
   ok: true;
   data: Kanban[];
 };
@@ -15,8 +15,13 @@ const initState = {
   status: 'OPEN',
 };
 
+export type Task = {
+  name: string;
+  status: string;
+};
+
 const useKanban = () => {
-  const { data: res, isLoading: loading } = useSWR<ResPokeAPI>(
+  const { data: res, isLoading: loading } = useSWR<ResKanbanAPI>(
     KANBAN_URL,
     fetcher
   );
@@ -24,61 +29,83 @@ const useKanban = () => {
   const [kanbans, setKanbans] = useState<Kanban[]>([]);
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [updatedKanban, setUpdatedKanban] = useState(initState);
+  const [updatedKanban, setUpdatedKanban] = useState<Task>(initState);
+  const [newKanban, setNewKanban] = useState<Task>(initState);
+
+  const onUpdateKanbanInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setUpdatedKanban({ ...updatedKanban, name: e.target.value });
+    },
+    []
+  );
+
+  const onAddKanbanInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setNewKanban({ ...newKanban, name: e.target.value });
+    },
+    []
+  );
 
   const onResetUpdatedKanbanState = () => setUpdatedKanban(initState);
+  const onResetAddKanbanState = () => setNewKanban(initState);
 
-  const addKanban = async () => {
-    if (updatedKanban.name === '') return;
+  const addKanban = useCallback(async () => {
+    if (newKanban.name === '') return;
     setIsFetching.on();
     try {
-      const res = await instance().post('/kanban', updatedKanban);
+      const res = await instance().post('/kanban', newKanban);
       const updatedKanbans = [...kanbans];
       updatedKanbans.push(res.data.data);
       setKanbans(updatedKanbans);
-      onResetUpdatedKanbanState();
+      onResetAddKanbanState();
     } catch (error) {
       // todo trait error
       console.log('error :>> ', error);
     } finally {
       setIsFetching.off();
     }
-  };
+  }, [updatedKanban]);
 
-  const deleteKanban = async (kanbanId: string) => {
-    setIsFetching.on();
-    try {
-      await instance().delete('/kanban/' + kanbanId);
+  const deleteKanban = useCallback(
+    async (kanbanId: string) => {
+      setIsFetching.on();
+      try {
+        await instance().delete('/kanban/' + kanbanId);
 
-      setKanbans(kanbans?.filter(({ _id }) => _id !== kanbanId));
-    } catch (error) {
-      // todo trait error
-      console.log('error :>> ', error);
-    } finally {
-      setIsFetching.off();
-    }
-  };
+        setKanbans(kanbans?.filter(({ _id }) => _id !== kanbanId));
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [kanbans]
+  );
 
-  const updateKanban = async (kanbanId: string) => {
-    setIsFetching.on();
-    try {
-      await instance().put('/kanban/' + kanbanId, updatedKanban);
+  const updateKanban = useCallback(
+    async (kanbanId: string) => {
+      setIsFetching.on();
+      try {
+        await instance().put('/kanban/' + kanbanId, updatedKanban);
 
-      setKanbans(
-        kanbans?.map((kanban) =>
-          kanban._id === kanbanId
-            ? { ...kanban, name: updatedKanban.name }
-            : { ...kanban }
-        )
-      );
-      onResetUpdatedKanbanState();
-    } catch (error) {
-      // todo trait error
-      console.log('error :>> ', error);
-    } finally {
-      setIsFetching.off();
-    }
-  };
+        setKanbans(
+          kanbans?.map((kanban) =>
+            kanban._id === kanbanId
+              ? { ...kanban, name: updatedKanban.name }
+              : { ...kanban }
+          )
+        );
+        onResetUpdatedKanbanState();
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [kanbans, updatedKanban]
+  );
   // todo fix backend with no name
   // todo this
   const updateKanbanStatus = async (
@@ -114,10 +141,6 @@ const useKanban = () => {
     }
   };
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUpdatedKanban({ ...updatedKanban, name: e.target.value });
-  };
-
   const isLoading = loading || isFecthing;
 
   useEffect(() => {
@@ -127,24 +150,28 @@ const useKanban = () => {
   return useMemo(() => {
     return {
       kanbans,
+      newKanban,
       updatedKanban,
       isLoading,
       addKanban,
       deleteKanban,
       updateKanban,
       updateKanbanStatus,
-      onChange,
+      onAddKanbanInputChange,
+      onUpdateKanbanInputChange,
       setUpdatedKanban,
     };
   }, [
     kanbans,
+    newKanban,
     updatedKanban,
     isLoading,
     addKanban,
     deleteKanban,
     updateKanban,
     updateKanbanStatus,
-    onChange,
+    onAddKanbanInputChange,
+    onUpdateKanbanInputChange,
     setUpdatedKanban,
   ]);
 };

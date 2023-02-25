@@ -1,11 +1,9 @@
 import './App.css';
 import {
   Box,
-  Button,
   ChakraProvider,
   CircularProgress,
   HStack,
-  Input,
   Stack,
   Text,
   useBoolean,
@@ -18,26 +16,32 @@ import {
 } from './assets/svg/icons';
 import useKanban from './hooks/useKanban';
 import { useState } from 'react';
+import CustomInput from './ui/CustomInput';
+import CustomButton from './ui/CustomButton';
+import CustomLoader from './ui/CustomLoader';
+import Addtask from './components/AddTask';
 
-function App() {
+const App = () => {
   const {
     kanbans,
+    newKanban,
     updatedKanban,
     isLoading,
     addKanban,
     deleteKanban,
     updateKanban,
     updateKanbanStatus,
-    onChange,
+    onAddKanbanInputChange,
+    onUpdateKanbanInputChange,
     setUpdatedKanban,
   } = useKanban();
-  const [isAdding, setIsAdding] = useBoolean();
+
   const [isEditing, setIsEditing] = useBoolean();
   const [editKanbanId, setEditKanbanId] = useState('');
 
   return (
     <ChakraProvider>
-      <Box className="App" pos={'relative'}>
+      <div className="App">
         {isLoading && (
           <Stack
             sx={{ backdropFilter: 'blur(3px)' }}
@@ -49,26 +53,15 @@ function App() {
             width="100%"
             zIndex={100}
           >
-            <CircularProgress isIndeterminate />
+            <CustomLoader />
           </Stack>
         )}
         <HStack minH="64px" p={3} spacing={3} justify="center">
-          {isAdding ? (
-            <>
-              <Box cursor="pointer" onClick={setIsAdding.off}>
-                <ArrowLeftSvgIcon fill="#122" />
-              </Box>
-              <Input value={updatedKanban.name} onChange={(e) => onChange(e)} />
-              <Button onClick={addKanban}>OK</Button>
-            </>
-          ) : (
-            <>
-              <p>Add note</p>
-              <Box px={4} cursor="pointer" onClick={setIsAdding.on}>
-                <AddCircleSvgIcon fill="#122" />
-              </Box>
-            </>
-          )}
+          <Addtask
+            addKanban={addKanban}
+            newKanban={newKanban}
+            onKanbanInputChange={onAddKanbanInputChange}
+          />
         </HStack>
         {kanbans?.map(({ name, _id, status }, index) => (
           <HStack
@@ -87,19 +80,21 @@ function App() {
               {isEditing && editKanbanId === _id ? (
                 <HStack w={'100%'} spacing={4}>
                   <Box flex={6}>
-                    <Input
+                    <CustomInput
                       onBlur={() => {
                         updateKanban(_id);
                         setIsEditing.off();
                       }}
-                      onChange={(e) => onChange(e)}
+                      onChange={(e) => onUpdateKanbanInputChange(e)}
                       value={updatedKanban.name}
                       size="sm"
                     />
                   </Box>
-                  <Button flex={1} onClick={setIsEditing.off} size={'sm'}>
-                    Cancel
-                  </Button>
+                  <Box flex={1}>
+                    <CustomButton onClick={setIsEditing.off} size={'sm'}>
+                      Cancel
+                    </CustomButton>
+                  </Box>
                 </HStack>
               ) : (
                 <Text
@@ -109,7 +104,6 @@ function App() {
                   cursor="pointer"
                   onClick={() => {
                     setIsEditing.on();
-                    setIsAdding.off();
                     setUpdatedKanban({ name, status });
                     setEditKanbanId(_id);
                   }}
@@ -119,21 +113,22 @@ function App() {
               )}
             </HStack>
 
-            <Button
+            <CustomButton
               onClick={() => updateKanbanStatus(_id, name, status)}
               variant="outline"
+              isDisabled={isEditing && _id === editKanbanId}
             >
               {status === 'DONE' ? 'ReOpen' : 'Done'}
-            </Button>
+            </CustomButton>
 
             <Box cursor="pointer" onClick={() => deleteKanban(_id)}>
               <DeleteSvgIcon fill="#122" />
             </Box>
           </HStack>
         ))}
-      </Box>
+      </div>
     </ChakraProvider>
   );
-}
+};
 
 export default App;
