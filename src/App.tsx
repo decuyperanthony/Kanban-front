@@ -2,19 +2,14 @@ import './App.css';
 import {
   Box,
   ChakraProvider,
-  CircularProgress,
   HStack,
   Stack,
   Text,
   useBoolean,
 } from '@chakra-ui/react';
 
-import {
-  AddCircleSvgIcon,
-  ArrowLeftSvgIcon,
-  DeleteSvgIcon,
-} from './assets/svg/icons';
-import useKanban from './hooks/useKanban';
+import { DeleteSvgIcon } from './assets/svg/icons';
+import useTask from './hooks/useTask';
 import { useState } from 'react';
 import CustomInput from './ui/CustomInput';
 import CustomButton from './ui/CustomButton';
@@ -23,21 +18,21 @@ import Addtask from './components/AddTask';
 
 const App = () => {
   const {
-    kanbans,
-    newKanban,
-    updatedKanban,
+    tasks,
+    newTask,
+    updatedTask,
     isLoading,
-    addKanban,
-    deleteKanban,
-    updateKanban,
-    updateKanbanStatus,
-    onAddKanbanInputChange,
-    onUpdateKanbanInputChange,
-    setUpdatedKanban,
-  } = useKanban();
+    addTask,
+    deleteTask,
+    updateTask,
+    updateTaskStatus,
+    onAddTaskInputChange,
+    onUpdateTaskInputChange,
+    setUpdatedTask,
+  } = useTask();
 
   const [isEditing, setIsEditing] = useBoolean();
-  const [editKanbanId, setEditKanbanId] = useState('');
+  const [editTaskId, setEditTaskId] = useState('');
 
   return (
     <ChakraProvider>
@@ -58,35 +53,33 @@ const App = () => {
         )}
         <HStack minH="64px" p={3} spacing={3} justify="center">
           <Addtask
-            addKanban={addKanban}
-            newKanban={newKanban}
-            onKanbanInputChange={onAddKanbanInputChange}
+            addTask={addTask}
+            newTask={newTask}
+            onTaskInputChange={onAddTaskInputChange}
           />
         </HStack>
-        {kanbans?.map(({ name, _id, status }, index) => (
+        {tasks?.map(({ name, _id, status }, index) => (
           <HStack
             justify="space-between"
             p={3}
             border="1px solid"
             borderTop={index === 0 ? '2px solid' : undefined}
-            borderBottom={
-              index === kanbans.length - 1 ? '2px solid' : undefined
-            }
+            borderBottom={index === tasks.length - 1 ? '2px solid' : undefined}
             borderColor={'blue.500'}
             key={_id}
             bg={status === 'DONE' ? 'blue.200' : undefined}
           >
             <HStack w={'100%'} align="center" minH={'40px'}>
-              {isEditing && editKanbanId === _id ? (
+              {isEditing && editTaskId === _id ? (
                 <HStack w={'100%'} spacing={4}>
                   <Box flex={6}>
                     <CustomInput
                       onBlur={() => {
-                        updateKanban(_id);
+                        updateTask(_id);
                         setIsEditing.off();
                       }}
-                      onChange={(e) => onUpdateKanbanInputChange(e)}
-                      value={updatedKanban.name}
+                      onChange={(e) => onUpdateTaskInputChange(e)}
+                      value={updatedTask.name}
                       size="sm"
                     />
                   </Box>
@@ -104,8 +97,8 @@ const App = () => {
                   cursor="pointer"
                   onClick={() => {
                     setIsEditing.on();
-                    setUpdatedKanban({ name, status });
-                    setEditKanbanId(_id);
+                    setUpdatedTask({ name, status });
+                    setEditTaskId(_id);
                   }}
                 >
                   {name}
@@ -114,14 +107,14 @@ const App = () => {
             </HStack>
 
             <CustomButton
-              onClick={() => updateKanbanStatus(_id, name, status)}
+              onClick={() => updateTaskStatus(_id, name, status)}
               variant="outline"
-              isDisabled={isEditing && _id === editKanbanId}
+              isDisabled={isEditing && _id === editTaskId}
             >
               {status === 'DONE' ? 'ReOpen' : 'Done'}
             </CustomButton>
 
-            <Box cursor="pointer" onClick={() => deleteKanban(_id)}>
+            <Box cursor="pointer" onClick={() => deleteTask(_id)}>
               <DeleteSvgIcon fill="#122" />
             </Box>
           </HStack>
