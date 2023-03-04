@@ -1,15 +1,13 @@
 import { Box, useBoolean } from '@chakra-ui/react';
 import { FC } from 'react';
 import { AddCircleSvgIcon, ArrowLeftSvgIcon } from '../assets/svg/icons';
-import { Task } from '../hooks/useKanban';
+import { useAppContext } from '../context/AppContext';
+
 import CustomButton from '../ui/CustomButton';
 import CustomInput from '../ui/CustomInput';
-type Props = {
-  addKanban: () => Promise<void>;
-  newKanban: Task;
-  onKanbanInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-};
-const Addtask: FC<Props> = ({ addKanban, newKanban, onKanbanInputChange }) => {
+
+const Addtask: FC = () => {
+  const { addTask, newTask, onAddTaskInputChange } = useAppContext();
   const [isAdding, setIsAdding] = useBoolean();
 
   return (
@@ -20,10 +18,10 @@ const Addtask: FC<Props> = ({ addKanban, newKanban, onKanbanInputChange }) => {
             <ArrowLeftSvgIcon fill="#122" />
           </Box>
           <CustomInput
-            value={newKanban.name}
-            onChange={(e) => onKanbanInputChange(e)}
+            value={newTask.name}
+            onChange={(e) => onAddTaskInputChange(e)}
           />
-          <CustomButton onClick={addKanban}>OK</CustomButton>
+          <CustomButton onClick={addTask}>OK</CustomButton>
         </>
       ) : (
         <>
