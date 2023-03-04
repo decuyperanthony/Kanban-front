@@ -6,10 +6,26 @@ type Props = {
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   value?: string | number | readonly string[];
   size?: ResponsiveValue<string | 'sm' | 'md' | 'lg' | 'xs'>;
+  autoFocus?: boolean;
+  placeholder?: string;
 };
 
-const CustomInput: FC<Props> = ({ onBlur, onChange, value, size }) => (
-  <Input onBlur={onBlur} onChange={onChange} value={value} size={size} />
+const CustomInput: FC<Props> = ({
+  onBlur,
+  onChange,
+  value,
+  size,
+  autoFocus,
+  placeholder,
+}) => (
+  <Input
+    placeholder={placeholder}
+    autoFocus={autoFocus}
+    onBlur={onBlur}
+    onChange={onChange}
+    value={value}
+    size={size}
+  />
 );
 
 export default CustomInput;

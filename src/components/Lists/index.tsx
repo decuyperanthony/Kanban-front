@@ -1,26 +1,36 @@
-import { Box, HStack } from '@chakra-ui/react';
+import { Tab, TabList, Tabs } from '@chakra-ui/react';
+
+import { FC, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 
-const Lists = () => {
+type Props = {
+  isAddingList: boolean;
+};
+
+const Lists: FC<Props> = ({ isAddingList }) => {
   const {
     lists,
     // isLoading: isListLoading,
     setSelectedListId,
   } = useAppContext();
+  const [tabIndex, setTabIndex] = useState(0);
+
   return (
-    <HStack>
-      {lists.map(({ title, _id }) => {
-        return (
-          <Box
-            onClick={() => setSelectedListId(_id)}
-            border="1px solid black"
-            key={title}
-          >
-            {title}
-          </Box>
-        );
-      })}
-    </HStack>
+    <Tabs onChange={(index) => setTabIndex(index)} variant="enclosed">
+      <TabList>
+        {lists.map(({ title, _id }) => {
+          return (
+            <Tab
+              isDisabled={isAddingList}
+              onClick={() => setSelectedListId(_id)}
+              key={_id}
+            >
+              {title}
+            </Tab>
+          );
+        })}
+      </TabList>
+    </Tabs>
   );
 };
 

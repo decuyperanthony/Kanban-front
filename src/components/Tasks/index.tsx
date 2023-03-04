@@ -22,6 +22,9 @@ const Tasks: FC = () => {
 
   return (
     <>
+      {!tasks.length && (
+        <Box p={1}>Vous n&rsquo;avez aucune tâches en cours ...</Box>
+      )}
       {tasks?.map(({ name, _id, status }, index) => (
         <HStack
           justify="space-between"

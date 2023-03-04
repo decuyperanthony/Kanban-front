@@ -13,9 +13,12 @@ type ResTaskAPI = {
   data: Task[];
 };
 
-const initState = {
+const initTaskState = {
   name: '',
   status: 'OPEN' as TaskStatus,
+};
+const initListState = {
+  title: '',
 };
 
 type ResListAPI = {
@@ -29,8 +32,11 @@ type Context = {
   tasks: Task[];
   updatedTask: Omit<Task, '_id'>;
   addTask: () => Promise<void>;
+  addList: () => Promise<void>;
   newTask: Omit<Task, '_id'>;
+  newList: Omit<List, '_id'>;
   onAddTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAddListInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   updateTask: (id: string) => void;
   setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
   setUpdatedTask: React.Dispatch<React.SetStateAction<Omit<Task, '_id'>>>;
@@ -51,6 +57,9 @@ type Props = {
   children: React.ReactNode;
 };
 
+// todo les loaders
+// todo les errors
+
 const AppContextWrapper: FC<Props> = ({ children }) => {
   const [lists, setLists] = useState<List[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -58,8 +67,10 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
 
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [updatedTask, setUpdatedTask] = useState<Omit<Task, '_id'>>(initState);
-  const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initState);
+  const [updatedTask, setUpdatedTask] =
+    useState<Omit<Task, '_id'>>(initTaskState);
+  const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
+  const [newList, setNewList] = useState<Omit<List, '_id'>>(initListState);
 
   const { data: resLists, isLoading: isFetchindList } = useSWR<ResListAPI>(
     LIST_URL,
@@ -78,6 +89,13 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     []
   );
 
+  const onAddListInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setNewList({ ...updatedTask, title: e.target.value });
+    },
+    []
+  );
+
   const onAddTaskInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setNewTask({ ...newTask, name: e.target.value });
@@ -85,8 +103,28 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     []
   );
 
-  const onResetUpdatedTaskState = () => setUpdatedTask(initState);
-  const onResetAddTaskState = () => setNewTask(initState);
+  const onResetUpdatedTaskState = () => setUpdatedTask(initTaskState);
+  const onResetAddTaskState = () => setNewTask(initTaskState);
+  const onResetAddListState = () => setNewList(initListState);
+
+  const addList = useCallback(async () => {
+    if (newList.title === '') return;
+    setIsFetching.on();
+    try {
+      const res = await instance().post(LIST_URL, newList);
+      if (res.data?.ok) {
+        const updatedLists = [...lists];
+        updatedLists.push(res.data.data);
+        setLists(updatedLists);
+        onResetAddListState();
+      }
+    } catch (error) {
+      // todo trait error
+      console.log('error :>> ', error);
+    } finally {
+      setIsFetching.off();
+    }
+  }, [newList]);
 
   const addTask = useCallback(async () => {
     if (newTask.name === '') return;
@@ -187,10 +225,8 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     }
   };
 
-  const isLoading = isFetchindList;
-  // || isFetchindTask;
-  // todo 2eme loading
-
+  const isLoading = isFetchindList || isFecthing || isFetchindTask;
+  console.log({ isLoading, isFecthing });
   useEffect(() => {
     if (resLists?.data) {
       setSelectedListId(resLists.data[0]._id);
@@ -203,38 +239,41 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
 
   const contextValue = useMemo(
     () => ({
-      lists,
       isLoading,
+      lists,
       tasks,
+      newList,
       newTask,
       updatedTask,
       addTask,
+      addList,
       deleteTask,
       updateTask,
       updateTaskStatus,
+      onAddListInputChange,
       onAddTaskInputChange,
       onUpdateTaskInputChange,
       setUpdatedTask,
       setSelectedListId,
     }),
     [
-      lists,
       isLoading,
+      lists,
       tasks,
+      newList,
       newTask,
       updatedTask,
       isLoading,
       addTask,
+      addList,
       deleteTask,
       updateTask,
       updateTaskStatus,
+      onAddListInputChange,
       onAddTaskInputChange,
       onUpdateTaskInputChange,
       setUpdatedTask,
       setSelectedListId,
-      tasks,
-      newTask,
-      updatedTask,
     ]
   );
 
