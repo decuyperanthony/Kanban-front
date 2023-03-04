@@ -34,7 +34,11 @@ const Addtask: FC = () => {
       ) : (
         <>
           <p>Ajouter une tache</p>
-          <CustomIconButton onClick={setIsAdding.on} icon={<AddIcon />} />
+          <CustomIconButton
+            size="sm"
+            onClick={setIsAdding.on}
+            icon={<AddIcon />}
+          />
         </>
       )}
     </>

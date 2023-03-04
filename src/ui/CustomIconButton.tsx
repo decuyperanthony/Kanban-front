@@ -8,6 +8,7 @@ type Props = {
   >;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   ariaLabel?: string;
+  isDisabled?: boolean;
   size?: ResponsiveValue<string | 'md' | 'sm' | 'lg' | 'xs'>;
 };
 
@@ -16,8 +17,10 @@ const CustomIconButton: FC<Props> = ({
   ariaLabel = 'CustomIconButton',
   onClick,
   size = 'md',
+  isDisabled,
 }) => (
   <IconButton
+    isDisabled={isDisabled}
     onClick={onClick}
     aria-label={ariaLabel}
     size={size}
