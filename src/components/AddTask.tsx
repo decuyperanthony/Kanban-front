@@ -1,15 +1,13 @@
 import { Box, useBoolean } from '@chakra-ui/react';
 import { FC } from 'react';
 import { AddCircleSvgIcon, ArrowLeftSvgIcon } from '../assets/svg/icons';
-import { Task } from '../Models/task';
+import { useAppContext } from '../context/AppContext';
+
 import CustomButton from '../ui/CustomButton';
 import CustomInput from '../ui/CustomInput';
-type Props = {
-  addTask: () => Promise<void>;
-  newTask: Omit<Task, '_id'>;
-  onTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-};
-const Addtask: FC<Props> = ({ addTask, newTask, onTaskInputChange }) => {
+
+const Addtask: FC = () => {
+  const { addTask, newTask, onAddTaskInputChange } = useAppContext();
   const [isAdding, setIsAdding] = useBoolean();
 
   return (
@@ -21,7 +19,7 @@ const Addtask: FC<Props> = ({ addTask, newTask, onTaskInputChange }) => {
           </Box>
           <CustomInput
             value={newTask.name}
-            onChange={(e) => onTaskInputChange(e)}
+            onChange={(e) => onAddTaskInputChange(e)}
           />
           <CustomButton onClick={addTask}>OK</CustomButton>
         </>
