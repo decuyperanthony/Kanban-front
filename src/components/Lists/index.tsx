@@ -1,36 +1,45 @@
-import { Tab, TabList, Tabs } from '@chakra-ui/react';
-
-import { FC, useState } from 'react';
+import { FC } from 'react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import { useAppContext } from '../../context/AppContext';
-
 type Props = {
-  isAddingList: boolean;
+  setIsAddingTask: {
+    on: () => void;
+    off: () => void;
+  };
 };
-
-const Lists: FC<Props> = ({ isAddingList }) => {
-  const {
-    lists,
-    // isLoading: isListLoading,
-    setSelectedListId,
-  } = useAppContext();
-  const [tabIndex, setTabIndex] = useState(0);
+const Lists: FC<Props> = ({ setIsAddingTask }) => {
+  const { lists, setSelectedListId, selectedListId } = useAppContext();
 
   return (
-    <Tabs onChange={(index) => setTabIndex(index)} variant="enclosed">
-      <TabList>
-        {lists.map(({ title, _id }) => {
-          return (
-            <Tab
-              isDisabled={isAddingList}
-              onClick={() => setSelectedListId(_id)}
-              key={_id}
+    <Flex>
+      {lists.map(({ title, _id }) => {
+        const isSelected = selectedListId === _id;
+        return (
+          <Box
+            cursor="pointer"
+            borderTop={isSelected ? '1px solid' : ''}
+            borderLeft={isSelected ? '1px solid' : ''}
+            borderRight={isSelected ? '1px solid' : ''}
+            borderBottom={!isSelected ? '1px solid' : ''}
+            borderColor="#E2E8F0"
+            onClick={() => {
+              setIsAddingTask.off();
+              setSelectedListId(_id);
+            }}
+            key={_id}
+            p={3}
+          >
+            <Text
+              noOfLines={1}
+              textAlign={'center'}
+              color={isSelected ? 'blue.500' : ''}
             >
               {title}
-            </Tab>
-          );
-        })}
-      </TabList>
-    </Tabs>
+            </Text>
+          </Box>
+        );
+      })}
+    </Flex>
   );
 };
 

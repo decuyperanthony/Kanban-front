@@ -25,7 +25,7 @@ const Tasks: FC = () => {
   return (
     <>
       {!tasks.length && (
-        <Box p={1}>Vous n&rsquo;avez aucune tâches en cours ...</Box>
+        <Box p={1}>aucune tâches en cours pour cette liste ...</Box>
       )}
       {tasks?.map(({ name, _id, status }) => (
         <HStack

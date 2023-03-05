@@ -1,4 +1,9 @@
-import { Input, ResponsiveValue } from '@chakra-ui/react';
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  ResponsiveValue,
+} from '@chakra-ui/react';
 import { FC } from 'react';
 
 type Props = {
@@ -8,6 +13,7 @@ type Props = {
   size?: ResponsiveValue<string | 'sm' | 'md' | 'lg' | 'xs'>;
   autoFocus?: boolean;
   placeholder?: string;
+  label?: string;
 };
 
 const CustomInput: FC<Props> = ({
@@ -17,15 +23,19 @@ const CustomInput: FC<Props> = ({
   size,
   autoFocus,
   placeholder,
+  label,
 }) => (
-  <Input
-    placeholder={placeholder}
-    autoFocus={autoFocus}
-    onBlur={onBlur}
-    onChange={onChange}
-    value={value}
-    size={size}
-  />
+  <FormControl>
+    {label && <FormLabel>{label}</FormLabel>}
+    <Input
+      placeholder={placeholder}
+      autoFocus={autoFocus}
+      onBlur={onBlur}
+      onChange={onChange}
+      value={value}
+      size={size}
+    />
+  </FormControl>
 );
 
 export default CustomInput;

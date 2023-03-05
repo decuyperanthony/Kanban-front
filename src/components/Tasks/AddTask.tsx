@@ -1,28 +1,34 @@
-import { AddIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { useBoolean } from '@chakra-ui/react';
+import { AddIcon, CalendarIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { FC } from 'react';
 import { useAppContext } from '../../context/AppContext';
 
 import CustomIconButton from '../../ui/CustomIconButton';
 import CustomInput from '../../ui/CustomInput';
 
-const Addtask: FC = () => {
+type Props = {
+  setIsAddingTask: {
+    on: () => void;
+    off: () => void;
+  };
+  isAddingTask: boolean;
+};
+
+const Addtask: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
   const { addTask, newTask, onAddTaskInputChange } = useAppContext();
-  const [isAdding, setIsAdding] = useBoolean();
 
   return (
     <>
-      {isAdding ? (
+      {isAddingTask ? (
         <>
           <CustomInput
-            placeholder="Ajouter une tache"
+            placeholder="nom de la nouvelle tache"
             value={newTask.name}
             onChange={(e) => onAddTaskInputChange(e)}
             size="sm"
           />
           <CustomIconButton
             size={'sm'}
-            onClick={setIsAdding.off}
+            onClick={setIsAddingTask.off}
             icon={<CloseIcon />}
           />
           <CustomIconButton
@@ -33,10 +39,11 @@ const Addtask: FC = () => {
         </>
       ) : (
         <>
-          <p>Ajouter une tache</p>
+          <CalendarIcon />
+          <p>Nouvelle tache</p>
           <CustomIconButton
             size="sm"
-            onClick={setIsAdding.on}
+            onClick={setIsAddingTask.on}
             icon={<AddIcon />}
           />
         </>

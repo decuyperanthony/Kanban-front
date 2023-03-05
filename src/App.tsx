@@ -1,10 +1,20 @@
 import './App.css';
 import {
   Box,
+  Button,
   ChakraProvider,
   HStack,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
   Stack,
+  Text,
   useBoolean,
+  useDisclosure,
 } from '@chakra-ui/react';
 
 import CustomLoader from './ui/CustomLoader';
@@ -14,20 +24,20 @@ import Lists from './components/Lists';
 import Tasks from './components/Tasks';
 import AppContextWrapper, { useAppContext } from './context/AppContext';
 import AddList from './components/Lists/AddList';
-import { useRef } from 'react';
+
+import CustomModal from './ui/CustomModal';
+import CustomButton from './ui/CustomButton';
 
 const App = () => {
-  const { isLoading } = useAppContext();
+  const { isLoading, deleteList } = useAppContext();
   const [isAddingList, setIsAddingList] = useBoolean();
-  const listRef = useRef(null);
-  // todo sroll to right if isAddingList
+  const [isAddingTask, setIsAddingTask] = useBoolean();
+  const {
+    isOpen: isPopoverDeleteListOpen,
+    onToggle: onTogglePopoverDeletelist,
+    onClose: onClosePopoverDeletelist,
+  } = useDisclosure();
 
-  // useEffect(() => {
-  //   if (isAddingList)
-  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //     // @ts-ignore
-  //     listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  // }, [isAddingList]);
   return (
     <div className="App">
       {isLoading && (
@@ -44,34 +54,84 @@ const App = () => {
           <CustomLoader />
         </Stack>
       )}
-      <HStack minH="64px" p={3} spacing={3} justify="center"></HStack>
+      <Box h="10px" />
       <HStack
-        w={'99vw'}
         overflowX="auto"
+        m="auto"
+        maxW={{ sm: '600px', md: '800px', lg: '1000px' }}
         sx={{
           '::-webkit-scrollbar': {
             display: 'none',
           },
         }}
-        ref={listRef}
-        minH="50px"
+        spacing={3}
       >
-        <Lists isAddingList={isAddingList} />
-        <Box minW={'70vw'}>
-          <AddList
-            isAddingList={isAddingList}
-            setIsAddingList={setIsAddingList}
-          />
+        <Lists setIsAddingTask={setIsAddingTask} />
+        <Box pr={2}>
+          <CustomButton
+            variant="outline"
+            colorScheme="blue"
+            onClick={setIsAddingList.on}
+          >
+            nouvelle liste
+          </CustomButton>
         </Box>
       </HStack>
       {!isAddingList && (
+        // TODO REFACTO THIS
         <Stack>
-          <HStack px={2} minH="46px">
-            <Addtask />
+          <HStack mt={2} px={2} minH="46px">
+            <Addtask
+              setIsAddingTask={setIsAddingTask}
+              isAddingTask={isAddingTask}
+            />
+            {!isAddingTask && (
+              <Popover
+                isOpen={isPopoverDeleteListOpen}
+                onClose={onClosePopoverDeletelist}
+              >
+                <PopoverTrigger>
+                  <Button
+                    onClick={onTogglePopoverDeletelist}
+                    size={'sm'}
+                    variant="ghost"
+                    colorScheme="red"
+                  >
+                    Supprimer la liste
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverArrow />
+                  <PopoverCloseButton />
+                  <PopoverHeader>Confirmation!</PopoverHeader>
+                  <PopoverBody>
+                    <Text>
+                      Êtes-vous sûrs de vouloir supprimer la liste ? Cela
+                      effecera toute(s) le(s) tache(s)
+                    </Text>
+                    <Box textAlign="right">
+                      <CustomButton
+                        onClick={() => deleteList(onClosePopoverDeletelist)}
+                        size={'sm'}
+                        colorScheme="red"
+                      >
+                        Oui
+                      </CustomButton>
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
+            )}
           </HStack>
           <Tasks />
         </Stack>
       )}
+      <CustomModal
+        hasCloseButton={false}
+        isOpen={isAddingList}
+        onClose={setIsAddingList.off}
+        body={<AddList setIsAddingList={setIsAddingList} />}
+      />
     </div>
   );
 };

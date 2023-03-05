@@ -8,15 +8,43 @@ type Props = {
   >;
   size?: ResponsiveValue<string | 'sm' | 'md' | 'lg' | 'xs'>;
   isDisabled?: boolean;
+  colorScheme?:
+    | string
+    | 'whiteAlpha'
+    | 'blackAlpha'
+    | 'gray'
+    | 'red'
+    | 'orange'
+    | 'yellow'
+    | 'green'
+    | 'teal'
+    | 'blue'
+    | 'cyan'
+    | 'purple'
+    | 'pink'
+    | 'linkedin'
+    | 'facebook'
+    | 'messenger'
+    | 'whatsapp'
+    | 'twitter'
+    | 'telegram';
 };
 
 const CustomButton: FC<PropsWithChildren<Props>> = ({
   onClick,
+  variant,
   isDisabled,
   children,
   size,
+  colorScheme,
 }) => (
-  <Button isDisabled={isDisabled} onClick={onClick} size={size}>
+  <Button
+    colorScheme={colorScheme}
+    variant={variant}
+    isDisabled={isDisabled}
+    onClick={onClick}
+    size={size}
+  >
     {children}
   </Button>
 );
