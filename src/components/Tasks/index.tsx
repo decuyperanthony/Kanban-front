@@ -79,7 +79,7 @@ const Tasks: FC = () => {
             size="sm"
             icon={status === 'OPEN' ? <CheckIcon /> : <UnlockIcon />}
             isDisabled={isEditing && _id === editTaskId}
-            onClick={() => updateTaskStatus(_id, name, status)}
+            onClick={() => updateTaskStatus(_id, status)}
           />
           <CustomIconButton
             size="sm"

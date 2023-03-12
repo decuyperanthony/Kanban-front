@@ -7,6 +7,8 @@ import { LIST_URL, TASK_URL } from '../service/endPoint';
 import { List } from '../Models/list';
 import { Task, TaskStatus } from '../Models/task';
 import { useBoolean } from '@chakra-ui/react';
+import { useImmer } from 'use-immer';
+import produce from 'immer';
 
 type ResTaskAPI = {
   ok: true;
@@ -33,10 +35,7 @@ type Context = {
   updatedTask: Omit<Task, '_id'>;
   selectedListId?: string;
   addTask: () => Promise<void>;
-  addList: (setIsAddingOrEditingList: {
-    on: () => void;
-    off: () => void;
-  }) => Promise<void>;
+  addEditList: (setIsAddingOrEditingListToFalse: () => void) => Promise<void>;
   onClickOnEditList: () => void;
   onResetListFormState: () => void;
 
@@ -51,11 +50,7 @@ type Context = {
   onUpdateTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   deleteTask: (taskId: string) => Promise<void>;
   deleteList: (onClosePopoverDeletelist: () => void) => Promise<void>;
-  updateTaskStatus: (
-    taskId: string,
-    name: string,
-    status: TaskStatus
-  ) => Promise<void>;
+  updateTaskStatus: (taskId: string, status: TaskStatus) => Promise<void>;
 };
 
 const AppContext = createContext<Context>({} as Context);
@@ -70,8 +65,8 @@ type Props = {
 // todo les errors
 
 const AppContextWrapper: FC<Props> = ({ children }) => {
-  const [lists, setLists] = useState<List[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [lists, setLists] = useImmer<List[]>([]);
+  const [tasks, setTasks] = useImmer<Task[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>();
   const [isFecthing, setIsFetching] = useBoolean();
 
@@ -116,7 +111,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     },
     []
   );
-  console.log({ listForm });
 
   const onResetUpdatedTaskState = () => setUpdatedTask(initTaskState);
   const onResetAddTaskState = () => setNewTask(initTaskState);
@@ -125,8 +119,8 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
   // todo mettre ses méthodes dans un hook avec le useState des tasks
   // todo comme cote incube
 
-  const addList = useCallback(
-    async (setIsAddingOrEditingList: { on: () => void; off: () => void }) => {
+  const addEditList = useCallback(
+    async (setIsAddingOrEditingListToFalse: () => void) => {
       if (listForm.title === '') return;
       try {
         setIsFetching.on();
@@ -140,7 +134,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
               )
             );
             onResetListFormState();
-            setIsAddingOrEditingList.off();
+            setIsAddingOrEditingListToFalse();
           }
         } else {
           // CREATE MODE
@@ -151,7 +145,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
             setLists(updatedLists);
             setSelectedListId(res.data.data._id);
             onResetListFormState();
-            setIsAddingOrEditingList.off();
+            setIsAddingOrEditingListToFalse();
           }
         }
       } catch (error) {
@@ -197,9 +191,11 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
         newTask
       );
       if (res.data?.ok) {
-        const updatedTasks = [...tasks];
-        updatedTasks.push(res.data.data);
-        setTasks(updatedTasks);
+        setTasks(
+          produce((draft) => {
+            draft.push(res.data.data);
+          })
+        );
         onResetAddTaskState();
       }
     } catch (error) {
@@ -228,20 +224,24 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [tasks]
   );
 
+  const updateTaskState = useCallback(
+    (task: Partial<Task>) => {
+      setTasks(
+        tasks.map((proj) =>
+          proj._id === task._id ? { ...proj, ...task } : { ...proj }
+        )
+      );
+    },
+    [tasks]
+  );
+
   const updateTask = useCallback(
     async (taskId: string) => {
       setIsFetching.on();
       try {
         const res = await instance().put(TASK_URL + taskId, updatedTask);
 
-        if (res.data?.ok)
-          setTasks(
-            tasks?.map((task) =>
-              task._id === taskId
-                ? { ...task, name: updatedTask.name }
-                : { ...task }
-            )
-          );
+        if (res.data?.ok) updateTaskState(res.data.data);
         onResetUpdatedTaskState();
       } catch (error) {
         // todo trait error
@@ -253,38 +253,31 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [tasks, updatedTask]
   );
 
-  const updateTaskStatus = async (
-    taskId: string,
-    name: string,
-    status: TaskStatus
-  ) => {
-    setIsFetching.on();
-    const updateStatus = status === 'DONE' ? 'OPEN' : 'DONE';
-    try {
-      await instance().put(TASK_URL + taskId, {
-        name,
-        status: updateStatus,
-      });
+  const updateTaskStatus = useCallback(
+    async (taskId: string, status: TaskStatus) => {
+      setIsFetching.on();
+      const updateStatus = status === 'DONE' ? 'OPEN' : 'DONE';
 
-      setTasks(
-        tasks?.map((task) =>
-          task._id === taskId
-            ? {
-                ...task,
-                status: status === 'DONE' ? 'OPEN' : 'DONE',
-                name: name,
-              }
-            : { ...task }
-        )
-      );
-      onResetUpdatedTaskState();
-    } catch (error) {
-      // todo trait error
-      console.log('error :>> ', error);
-    } finally {
-      setIsFetching.off();
-    }
-  };
+      try {
+        const res = await instance().put(TASK_URL + taskId, {
+          status: updateStatus,
+        });
+        console.log('res :>> ', res);
+        // todo faire un update task
+        // todo faire un update list
+        if (res.data.ok) {
+          updateTaskState(res.data.data);
+        }
+        onResetUpdatedTaskState();
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [tasks]
+  );
 
   const isLoading = isFetchindList || isFecthing || isFetchindTask;
 
@@ -308,7 +301,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       newTask,
       updatedTask,
       addTask,
-      addList,
+      addEditList,
       onClickOnEditList,
       deleteList,
       deleteTask,
@@ -331,7 +324,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       updatedTask,
       isLoading,
       addTask,
-      addList,
+      addEditList,
       onClickOnEditList,
       deleteList,
       deleteTask,
@@ -353,3 +346,4 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
 };
 
 export default AppContextWrapper;
+// 356

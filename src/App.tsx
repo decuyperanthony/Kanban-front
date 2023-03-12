@@ -67,7 +67,7 @@ const App = () => {
         }}
         spacing={3}
       >
-        <Lists setIsAddingTask={setIsAddingTask} />
+        <Lists setIsAddingTaskToFalse={setIsAddingTask.off} />
         <Box pr={2}>
           <CustomButton
             variant="outline"
@@ -143,7 +143,11 @@ const App = () => {
         hasCloseButton={false}
         isOpen={isAddingOrEditingList}
         onClose={setIsAddingOrEditingList.off}
-        body={<ListForm setIsAddingOrEditingList={setIsAddingOrEditingList} />}
+        body={
+          <ListForm
+            setIsAddingOrEditingListToFalse={setIsAddingOrEditingList.off}
+          />
+        }
       />
     </div>
   );
