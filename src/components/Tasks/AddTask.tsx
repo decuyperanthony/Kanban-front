@@ -1,4 +1,5 @@
 import { AddIcon, CalendarIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { Box, HStack } from '@chakra-ui/react';
 import { FC } from 'react';
 import { useAppContext } from '../../context/AppContext';
 
@@ -38,15 +39,11 @@ const Addtask: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
           />
         </>
       ) : (
-        <>
+        <HStack cursor="pointer" onClick={setIsAddingTask.on}>
           <CalendarIcon />
-          <p>Nouvelle tache</p>
-          <CustomIconButton
-            size="sm"
-            onClick={setIsAddingTask.on}
-            icon={<AddIcon />}
-          />
-        </>
+
+          <CustomIconButton size="sm" icon={<AddIcon />} />
+        </HStack>
       )}
     </>
   );

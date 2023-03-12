@@ -6,30 +6,37 @@ import CustomIconButton from '../../ui/CustomIconButton';
 import CustomInput from '../../ui/CustomInput';
 
 type Props = {
-  setIsAddingList: {
+  setIsAddingOrEditingList: {
     on: () => void;
     off: () => void;
   };
 };
 
-const AddList: FC<Props> = ({ setIsAddingList }) => {
-  const { addList, onAddListInputChange, newList } = useAppContext();
+const ListForm: FC<Props> = ({ setIsAddingOrEditingList }) => {
+  const { addList, onAddListInputChange, listForm, onResetListFormState } =
+    useAppContext();
 
   return (
     <HStack>
       <CustomInput
         onChange={onAddListInputChange}
-        value={newList.title}
+        value={listForm.title}
         autoFocus
-        placeholder="titre de la nouvelle liste"
+        placeholder={listForm?._id ? 'foo' : 'titre de la nouvelle liste'}
       />
-      <CustomIconButton onClick={setIsAddingList.off} icon={<CloseIcon />} />
       <CustomIconButton
-        onClick={() => addList(setIsAddingList)}
+        onClick={() => {
+          setIsAddingOrEditingList.off();
+          onResetListFormState();
+        }}
+        icon={<CloseIcon />}
+      />
+      <CustomIconButton
+        onClick={() => addList(setIsAddingOrEditingList)}
         icon={<CheckIcon />}
       />
     </HStack>
   );
 };
 
-export default AddList;
+export default ListForm;

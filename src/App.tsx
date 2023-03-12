@@ -23,15 +23,16 @@ import Addtask from './components/Tasks/AddTask';
 import Lists from './components/Lists';
 import Tasks from './components/Tasks';
 import AppContextWrapper, { useAppContext } from './context/AppContext';
-import AddList from './components/Lists/AddList';
+import ListForm from './components/Lists/ListForm';
 
 import CustomModal from './ui/CustomModal';
 import CustomButton from './ui/CustomButton';
 
 const App = () => {
-  const { isLoading, deleteList } = useAppContext();
-  const [isAddingList, setIsAddingList] = useBoolean();
+  const { isLoading, deleteList, onClickOnEditList } = useAppContext();
+  const [isAddingOrEditingList, setIsAddingOrEditingList] = useBoolean();
   const [isAddingTask, setIsAddingTask] = useBoolean();
+
   const {
     isOpen: isPopoverDeleteListOpen,
     onToggle: onTogglePopoverDeletelist,
@@ -71,13 +72,13 @@ const App = () => {
           <CustomButton
             variant="outline"
             colorScheme="blue"
-            onClick={setIsAddingList.on}
+            onClick={setIsAddingOrEditingList.on}
           >
             nouvelle liste
           </CustomButton>
         </Box>
       </HStack>
-      {!isAddingList && (
+      {!isAddingOrEditingList && (
         // TODO REFACTO THIS
         <Stack>
           <HStack mt={2} px={2} minH="46px">
@@ -86,41 +87,53 @@ const App = () => {
               isAddingTask={isAddingTask}
             />
             {!isAddingTask && (
-              <Popover
-                isOpen={isPopoverDeleteListOpen}
-                onClose={onClosePopoverDeletelist}
-              >
-                <PopoverTrigger>
-                  <Button
-                    onClick={onTogglePopoverDeletelist}
-                    size={'sm'}
-                    variant="ghost"
-                    colorScheme="red"
-                  >
-                    Supprimer la liste
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <PopoverArrow />
-                  <PopoverCloseButton />
-                  <PopoverHeader>Confirmation!</PopoverHeader>
-                  <PopoverBody>
-                    <Text>
-                      Êtes-vous sûrs de vouloir supprimer la liste ? Cela
-                      effecera toute(s) le(s) tache(s)
-                    </Text>
-                    <Box textAlign="right">
-                      <CustomButton
-                        onClick={() => deleteList(onClosePopoverDeletelist)}
-                        size={'sm'}
-                        colorScheme="red"
-                      >
-                        Oui
-                      </CustomButton>
-                    </Box>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
+              <>
+                <Popover
+                  isOpen={isPopoverDeleteListOpen}
+                  onClose={onClosePopoverDeletelist}
+                >
+                  <PopoverTrigger>
+                    <Button
+                      onClick={onTogglePopoverDeletelist}
+                      size={'sm'}
+                      variant="ghost"
+                      colorScheme="red"
+                    >
+                      Supprimer la liste
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverHeader>Confirmation!</PopoverHeader>
+                    <PopoverBody>
+                      <Text>
+                        Êtes-vous sûrs de vouloir supprimer la liste ? Cela
+                        effecera toute(s) le(s) tache(s)
+                      </Text>
+                      <Box textAlign="right">
+                        <CustomButton
+                          onClick={() => deleteList(onClosePopoverDeletelist)}
+                          size={'sm'}
+                          colorScheme="red"
+                        >
+                          Oui
+                        </CustomButton>
+                      </Box>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+                <CustomButton
+                  onClick={() => {
+                    onClickOnEditList();
+                    setIsAddingOrEditingList.on();
+                  }}
+                  size="sm"
+                  colorScheme="blue"
+                >
+                  Éditer la liste
+                </CustomButton>
+              </>
             )}
           </HStack>
           <Tasks />
@@ -128,9 +141,9 @@ const App = () => {
       )}
       <CustomModal
         hasCloseButton={false}
-        isOpen={isAddingList}
-        onClose={setIsAddingList.off}
-        body={<AddList setIsAddingList={setIsAddingList} />}
+        isOpen={isAddingOrEditingList}
+        onClose={setIsAddingOrEditingList.off}
+        body={<ListForm setIsAddingOrEditingList={setIsAddingOrEditingList} />}
       />
     </div>
   );

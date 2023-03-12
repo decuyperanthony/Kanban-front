@@ -33,15 +33,19 @@ type Context = {
   updatedTask: Omit<Task, '_id'>;
   selectedListId?: string;
   addTask: () => Promise<void>;
-  addList: (setIsAddingList: {
+  addList: (setIsAddingOrEditingList: {
     on: () => void;
     off: () => void;
   }) => Promise<void>;
+  onClickOnEditList: () => void;
+  onResetListFormState: () => void;
+
   newTask: Omit<Task, '_id'>;
-  newList: Omit<List, '_id'>;
+  listForm: Omit<List, '_id'> & { _id?: string };
   onAddTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddListInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   updateTask: (id: string) => void;
+
   setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
   setUpdatedTask: React.Dispatch<React.SetStateAction<Omit<Task, '_id'>>>;
   onUpdateTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -69,13 +73,14 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
   const [lists, setLists] = useState<List[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>();
-
   const [isFecthing, setIsFetching] = useBoolean();
 
+  const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
   const [updatedTask, setUpdatedTask] =
     useState<Omit<Task, '_id'>>(initTaskState);
-  const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
-  const [newList, setNewList] = useState<Omit<List, '_id'>>(initListState);
+  const [listForm, setListForm] = useState<
+    Omit<List, '_id'> & { _id?: string }
+  >(initListState);
 
   const { data: resLists, isLoading: isFetchindList } = useSWR<ResListAPI>(
     LIST_URL,
@@ -91,15 +96,19 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     (e: ChangeEvent<HTMLInputElement>) => {
       setUpdatedTask({ ...updatedTask, name: e.target.value });
     },
-    []
+    [updatedTask]
   );
 
   const onAddListInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setNewList({ ...updatedTask, title: e.target.value });
+      setListForm({ ...listForm, title: e.target.value });
     },
-    []
+    [listForm]
   );
+
+  const onClickOnEditList = useCallback(() => {
+    setListForm(lists.find(({ _id }) => _id === selectedListId) as List);
+  }, [lists, selectedListId]);
 
   const onAddTaskInputChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -107,25 +116,43 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     },
     []
   );
+  console.log({ listForm });
 
   const onResetUpdatedTaskState = () => setUpdatedTask(initTaskState);
   const onResetAddTaskState = () => setNewTask(initTaskState);
-  const onResetAddListState = () => setNewList(initListState);
+  const onResetListFormState = () => setListForm(initListState);
+
   // todo mettre ses méthodes dans un hook avec le useState des tasks
   // todo comme cote incube
+
   const addList = useCallback(
-    async (setIsAddingList: { on: () => void; off: () => void }) => {
-      if (newList.title === '') return;
-      setIsFetching.on();
+    async (setIsAddingOrEditingList: { on: () => void; off: () => void }) => {
+      if (listForm.title === '') return;
       try {
-        const res = await instance().post(LIST_URL, newList);
-        if (res.data?.ok) {
-          const updatedLists = [...lists];
-          updatedLists.push(res.data.data);
-          setLists(updatedLists);
-          onResetAddListState();
-          setSelectedListId(res.data.data._id);
-          setIsAddingList.off();
+        setIsFetching.on();
+        if (listForm?._id) {
+          // EDIT MODE
+          const res = await instance().put(LIST_URL + selectedListId, listForm);
+          if (res.data?.ok) {
+            setLists(
+              lists.map((list) =>
+                list._id === selectedListId ? { ...res.data.data } : { ...list }
+              )
+            );
+            onResetListFormState();
+            setIsAddingOrEditingList.off();
+          }
+        } else {
+          // CREATE MODE
+          const res = await instance().post(LIST_URL, listForm);
+          if (res.data?.ok) {
+            const updatedLists = [...lists];
+            updatedLists.push(res.data.data);
+            setLists(updatedLists);
+            setSelectedListId(res.data.data._id);
+            onResetListFormState();
+            setIsAddingOrEditingList.off();
+          }
         }
       } catch (error) {
         // todo trait error
@@ -134,7 +161,31 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
         setIsFetching.off();
       }
     },
-    [newList]
+    [listForm]
+  );
+
+  const deleteList = useCallback(
+    async (onClosePopoverDeletelist: () => void) => {
+      setIsFetching.on();
+      try {
+        const res = await instance().delete(LIST_URL + selectedListId);
+
+        if (res.status === 204) {
+          const updatedLists = lists?.filter(
+            ({ _id }) => _id !== selectedListId
+          );
+          setLists(updatedLists);
+          setSelectedListId(updatedLists[0]._id);
+          onClosePopoverDeletelist();
+        }
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [lists, selectedListId]
   );
 
   const addTask = useCallback(async () => {
@@ -175,30 +226,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       }
     },
     [tasks]
-  );
-
-  const deleteList = useCallback(
-    async (onClosePopoverDeletelist: () => void) => {
-      setIsFetching.on();
-      try {
-        const res = await instance().delete(LIST_URL + selectedListId);
-
-        if (res.status === 204) {
-          const updatedLists = lists?.filter(
-            ({ _id }) => _id !== selectedListId
-          );
-          setLists(updatedLists);
-          setSelectedListId(updatedLists[0]._id);
-          onClosePopoverDeletelist();
-        }
-      } catch (error) {
-        // todo trait error
-        console.log('error :>> ', error);
-      } finally {
-        setIsFetching.off();
-      }
-    },
-    [lists, selectedListId]
   );
 
   const updateTask = useCallback(
@@ -277,11 +304,12 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       isLoading,
       lists,
       tasks,
-      newList,
+      listForm,
       newTask,
       updatedTask,
       addTask,
       addList,
+      onClickOnEditList,
       deleteList,
       deleteTask,
       updateTask,
@@ -291,18 +319,20 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       onUpdateTaskInputChange,
       setUpdatedTask,
       setSelectedListId,
+      onResetListFormState,
       selectedListId,
     }),
     [
       isLoading,
       lists,
       tasks,
-      newList,
+      listForm,
       newTask,
       updatedTask,
       isLoading,
       addTask,
       addList,
+      onClickOnEditList,
       deleteList,
       deleteTask,
       updateTask,
@@ -312,6 +342,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       onUpdateTaskInputChange,
       setUpdatedTask,
       setSelectedListId,
+      onResetListFormState,
       selectedListId,
     ]
   );
