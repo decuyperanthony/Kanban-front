@@ -1,5 +1,4 @@
-import { AddIcon, CalendarIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
-import { Box, HStack } from '@chakra-ui/react';
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { ChangeEvent, FC, useCallback, useState } from 'react';
 import { initTaskState, useAppContext } from '../../context/AppContext';
 import { Task } from '../../Models/task';
@@ -12,10 +11,9 @@ type Props = {
     on: () => void;
     off: () => void;
   };
-  isAddingTask: boolean;
 };
 
-const TaskForm: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
+const TaskForm: FC<Props> = ({ setIsAddingTask }) => {
   const { addTask } = useAppContext();
 
   const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
@@ -31,32 +29,22 @@ const TaskForm: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
 
   return (
     <>
-      {isAddingTask ? (
-        <>
-          <CustomInput
-            placeholder="nom de la nouvelle tache"
-            value={newTask.name}
-            onChange={(e) => onAddTaskInputChange(e)}
-            size="sm"
-          />
-          <CustomIconButton
-            size={'sm'}
-            onClick={setIsAddingTask.off}
-            icon={<CloseIcon />}
-          />
-          <CustomIconButton
-            onClick={() => addTask(newTask, onResetAddTaskState)}
-            size={'sm'}
-            icon={<CheckIcon />}
-          />
-        </>
-      ) : (
-        <HStack cursor="pointer" onClick={setIsAddingTask.on}>
-          <CalendarIcon />
-
-          <CustomIconButton size="sm" icon={<AddIcon />} />
-        </HStack>
-      )}
+      <CustomInput
+        placeholder="nom de la nouvelle tache"
+        value={newTask.name}
+        onChange={(e) => onAddTaskInputChange(e)}
+        size="sm"
+      />
+      <CustomIconButton
+        size={'sm'}
+        onClick={setIsAddingTask.off}
+        icon={<CloseIcon />}
+      />
+      <CustomIconButton
+        onClick={() => addTask(newTask, onResetAddTaskState)}
+        size={'sm'}
+        icon={<CheckIcon />}
+      />
     </>
   );
 };
