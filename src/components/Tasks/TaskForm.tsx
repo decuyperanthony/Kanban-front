@@ -1,5 +1,6 @@
-import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { ChangeEvent, FC, useCallback, useState } from 'react';
+import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
+
 import { initTaskState, useAppContext } from '../../context/AppContext';
 import { Task } from '../../Models/task';
 
