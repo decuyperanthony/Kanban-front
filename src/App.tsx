@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react';
 
 import CustomLoader from './ui/CustomLoader';
-import Addtask from './components/Tasks/AddTask';
+import TaskForm from './components/Tasks/TaskForm';
 
 import Lists from './components/Lists';
 import Tasks from './components/Tasks';
@@ -27,17 +27,42 @@ import ListForm from './components/Lists/ListForm';
 
 import CustomModal from './ui/CustomModal';
 import CustomButton from './ui/CustomButton';
+import { useImmer } from 'use-immer';
+import { ChangeEvent, useCallback } from 'react';
+import { List } from './Models/list';
+
+const initListState = {
+  title: '',
+};
 
 const App = () => {
-  const { isLoading, deleteList, onClickOnEditList } = useAppContext();
+  const [listForm, setListForm] = useImmer<Partial<List>>(initListState);
+
+  const { isLoading, deleteList, lists, selectedListId } = useAppContext();
+
   const [isAddingOrEditingList, setIsAddingOrEditingList] = useBoolean();
   const [isAddingTask, setIsAddingTask] = useBoolean();
-
   const {
     isOpen: isPopoverDeleteListOpen,
     onToggle: onTogglePopoverDeletelist,
     onClose: onClosePopoverDeletelist,
   } = useDisclosure();
+
+  const onClickOnEditList = useCallback(() => {
+    setListForm(lists.find(({ _id }) => _id === selectedListId) as List);
+  }, [lists, selectedListId]);
+
+  const onResetListFormState = () => setListForm(initListState);
+
+  const onAddListInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setListForm({ ...listForm, title: e.target.value });
+    },
+    [listForm]
+  );
+
+  // todo refacto tout ce composant virer toutes les méthodes de l'app et les mettre
+  // todo dans des coposants disctincts
 
   return (
     <div className="App">
@@ -82,7 +107,7 @@ const App = () => {
         // TODO REFACTO THIS
         <Stack>
           <HStack mt={2} px={2} minH="46px">
-            <Addtask
+            <TaskForm
               setIsAddingTask={setIsAddingTask}
               isAddingTask={isAddingTask}
             />
@@ -146,6 +171,9 @@ const App = () => {
         body={
           <ListForm
             setIsAddingOrEditingListToFalse={setIsAddingOrEditingList.off}
+            onResetListFormState={onResetListFormState}
+            onAddListInputChange={onAddListInputChange}
+            listForm={listForm}
           />
         }
       />

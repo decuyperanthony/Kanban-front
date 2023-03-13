@@ -15,7 +15,7 @@ type Props = {
   isAddingTask: boolean;
 };
 
-const Addtask: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
+const TaskForm: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
   const { addTask } = useAppContext();
 
   const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
@@ -61,4 +61,4 @@ const Addtask: FC<Props> = ({ isAddingTask, setIsAddingTask }) => {
   );
 };
 
-export default Addtask;
+export default TaskForm;

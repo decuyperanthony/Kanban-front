@@ -25,31 +25,28 @@ export const initTaskState = {
   name: '',
   status: 'OPEN' as TaskStatus,
 };
-const initListState = {
-  title: '',
-};
 
 type Context = {
   lists: List[];
-  isLoading: boolean;
   tasks: Task[];
   selectedListId?: string;
+  isLoading: boolean;
   addTask: (
     newTask: Partial<Task>,
     onResetAddTaskState: () => void
   ) => Promise<void>;
-  addEditList: (setIsAddingOrEditingListToFalse: () => void) => Promise<void>;
-  onClickOnEditList: () => void;
-  onResetListFormState: () => void;
-  listForm: Omit<List, '_id'> & { _id?: string };
-  onAddListInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  deleteTask: (taskId: string) => Promise<void>;
-  deleteList: (onClosePopoverDeletelist: () => void) => Promise<void>;
   updateTask: (
     task: Partial<Task>,
     onResetUpdatedTaskState: () => void
   ) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
+  addEditList: (
+    listForm: Partial<List>,
+    setIsAddingOrEditingListToFalse: () => void,
+    onResetListFormState: () => void
+  ) => Promise<void>;
+  deleteList: (onClosePopoverDeletelist: () => void) => Promise<void>;
+  setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 const AppContext = createContext<Context>({} as Context);
@@ -60,18 +57,11 @@ type Props = {
   children: React.ReactNode;
 };
 
-// todo les loaders
-// todo les errors
-
 const AppContextWrapper: FC<Props> = ({ children }) => {
   const [lists, setLists] = useImmer<List[]>([]);
   const [tasks, setTasks] = useImmer<Task[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>();
   const [isFecthing, setIsFetching] = useBoolean();
-
-  const [listForm, setListForm] = useState<
-    Omit<List, '_id'> & { _id?: string }
-  >(initListState);
 
   const { data: resLists, isLoading: isFetchindList } = useSWR<ResListAPI>(
     LIST_URL,
@@ -83,21 +73,12 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     fetcher
   );
 
-  const onAddListInputChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setListForm({ ...listForm, title: e.target.value });
-    },
-    [listForm]
-  );
-
-  const onClickOnEditList = useCallback(() => {
-    setListForm(lists.find(({ _id }) => _id === selectedListId) as List);
-  }, [lists, selectedListId]);
-
-  const onResetListFormState = () => setListForm(initListState);
-
   const addEditList = useCallback(
-    async (setIsAddingOrEditingListToFalse: () => void) => {
+    async (
+      listForm: Partial<List>,
+      setIsAddingOrEditingListToFalse: () => void,
+      onResetListFormState: () => void
+    ) => {
       if (listForm.title === '') return;
       try {
         setIsFetching.on();
@@ -134,7 +115,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
         setIsFetching.off();
       }
     },
-    [listForm]
+    [selectedListId, lists]
   );
 
   const deleteList = useCallback(
@@ -189,11 +170,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     },
     [selectedListId]
   );
-
-  // todo virer le form ici pour les taches le mettre dans la vue => update task state
-  // todo faire pareil pour le newTask histoire d'alléger le contexte
-  // todo faire toute cette refacto pour les listes aussi
-  // todo virer les onChange
 
   const updateTask = useCallback(
     async (task: Partial<Task>, onResetUpdatedTaskState: () => void) => {
@@ -258,33 +234,25 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       isLoading,
       lists,
       tasks,
-      listForm,
       addTask,
       addEditList,
-      onClickOnEditList,
       deleteList,
       deleteTask,
       updateTask,
-      onAddListInputChange,
       setSelectedListId,
-      onResetListFormState,
       selectedListId,
     }),
     [
       isLoading,
       lists,
       tasks,
-      listForm,
       isLoading,
       addTask,
       addEditList,
-      onClickOnEditList,
       deleteList,
       deleteTask,
       updateTask,
-      onAddListInputChange,
       setSelectedListId,
-      onResetListFormState,
       selectedListId,
     ]
   );
