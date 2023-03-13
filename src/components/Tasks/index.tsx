@@ -1,4 +1,12 @@
-import { CheckIcon, CloseIcon, DeleteIcon, UnlockIcon } from '@chakra-ui/icons';
+import {
+  CheckIcon,
+  CloseIcon,
+  DeleteIcon,
+  MoonIcon,
+  StarIcon,
+  SunIcon,
+  UnlockIcon,
+} from '@chakra-ui/icons';
 import { Box, HStack, Text, useBoolean } from '@chakra-ui/react';
 import { ChangeEvent, FC, useCallback, useState } from 'react';
 
@@ -87,6 +95,22 @@ const Tasks: FC = () => {
                 {
                   _id: task._id,
                   done: !task.done,
+                },
+                onResetUpdatedTaskState
+              )
+            }
+          />
+          <CustomIconButton
+            size="sm"
+            icon={
+              task.isPrioritized ? <StarIcon color={'orange'} /> : <StarIcon />
+            }
+            isDisabled={isEditing && task._id === editTaskId}
+            onClick={() =>
+              updateTask(
+                {
+                  _id: task._id,
+                  isPrioritized: !task.isPrioritized,
                 },
                 onResetUpdatedTaskState
               )

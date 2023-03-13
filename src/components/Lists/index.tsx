@@ -14,6 +14,14 @@ const Lists: FC<Props> = ({
 
   return (
     <>
+      {/* <Box
+        onClick={() => {
+          setIsAddingTaskToFalse();
+          setSelectedListId('FAVORITE'); // todo
+        }}
+      >
+        Hello
+      </Box> */}
       {lists.map(({ title, _id }) => {
         const isSelected = selectedListId === _id;
         const border = '1px solid';

@@ -5,4 +5,5 @@ export type Task = {
   _id: string;
   status: TaskStatus;
   done: boolean;
+  isPrioritized: boolean;
 };
