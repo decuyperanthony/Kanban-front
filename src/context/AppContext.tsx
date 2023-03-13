@@ -24,6 +24,7 @@ type ResTaskAPI = {
 export const initTaskState = {
   name: '',
   status: 'OPEN' as TaskStatus,
+  done: false,
 };
 
 type Context = {

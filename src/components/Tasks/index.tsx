@@ -37,7 +37,7 @@ const Tasks: FC = () => {
           border="1px solid"
           borderColor={'#E2E8F0'}
           key={task._id}
-          bg={task.status === 'DONE' ? '#E2E8F0' : undefined}
+          bg={task.done ? '#E2E8F0' : undefined}
         >
           <HStack w={'100%'} align="center" minH={'40px'}>
             {isEditing && editTaskId === task._id ? (
@@ -67,7 +67,7 @@ const Tasks: FC = () => {
                 borderRadius="sm"
                 _hover={{ bg: 'gray.100' }}
                 cursor="pointer"
-                textDecor={task.status === 'DONE' ? 'line-through' : undefined}
+                textDecor={task.done ? 'line-through' : undefined}
                 onClick={() => {
                   setIsEditing.on();
                   setUpdatedTask(task);
@@ -80,13 +80,13 @@ const Tasks: FC = () => {
           </HStack>
           <CustomIconButton
             size="sm"
-            icon={task.status === 'OPEN' ? <CheckIcon /> : <UnlockIcon />}
+            icon={task.done ? <UnlockIcon /> : <CheckIcon />}
             isDisabled={isEditing && task._id === editTaskId}
             onClick={() =>
               updateTask(
                 {
                   _id: task._id,
-                  status: task.status === 'OPEN' ? 'DONE' : 'OPEN',
+                  done: !task.done,
                 },
                 onResetUpdatedTaskState
               )
