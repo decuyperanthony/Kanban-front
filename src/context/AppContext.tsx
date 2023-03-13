@@ -34,13 +34,14 @@ type Context = {
   isLoading: boolean;
   tasks: Task[];
   selectedListId?: string;
-  addTask: () => Promise<void>;
+  addTask: (
+    newTask: Partial<Task>,
+    onResetAddTaskState: () => void
+  ) => Promise<void>;
   addEditList: (setIsAddingOrEditingListToFalse: () => void) => Promise<void>;
   onClickOnEditList: () => void;
   onResetListFormState: () => void;
-  newTask: Omit<Task, '_id'>;
   listForm: Omit<List, '_id'> & { _id?: string };
-  onAddTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddListInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
   deleteTask: (taskId: string) => Promise<void>;
@@ -68,8 +69,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
   const [selectedListId, setSelectedListId] = useState<string>();
   const [isFecthing, setIsFetching] = useBoolean();
 
-  const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
-
   const [listForm, setListForm] = useState<
     Omit<List, '_id'> & { _id?: string }
   >(initListState);
@@ -95,18 +94,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     setListForm(lists.find(({ _id }) => _id === selectedListId) as List);
   }, [lists, selectedListId]);
 
-  const onAddTaskInputChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setNewTask({ ...newTask, name: e.target.value });
-    },
-    []
-  );
-
-  const onResetAddTaskState = () => setNewTask(initTaskState);
   const onResetListFormState = () => setListForm(initListState);
-
-  // todo mettre ses méthodes dans un hook avec le useState des tasks
-  // todo comme cote incube
 
   const addEditList = useCallback(
     async (setIsAddingOrEditingListToFalse: () => void) => {
@@ -129,9 +117,11 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
           // CREATE MODE
           const res = await instance().post(LIST_URL, listForm);
           if (res.data?.ok) {
-            const updatedLists = [...lists];
-            updatedLists.push(res.data.data);
-            setLists(updatedLists);
+            setLists(
+              produce((draft) => {
+                draft.push(res.data.data);
+              })
+            );
             setSelectedListId(res.data.data._id);
             onResetListFormState();
             setIsAddingOrEditingListToFalse();
@@ -157,7 +147,9 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
           const updatedLists = lists?.filter(
             ({ _id }) => _id !== selectedListId
           );
-          setLists(updatedLists);
+          setLists(lists?.filter(({ _id }) => _id !== selectedListId));
+          // todo au success set la liste précédente de celle delete ou si pas possible
+          // set la 0
           setSelectedListId(updatedLists[0]._id);
           onClosePopoverDeletelist();
         }
@@ -171,38 +163,23 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [lists, selectedListId]
   );
 
-  const addTask = useCallback(async () => {
-    if (newTask.name === '') return;
-    setIsFetching.on();
-    try {
-      const res = await instance().post(
-        TASK_URL + LIST_URL + selectedListId,
-        newTask
-      );
-      if (res.data?.ok) {
-        setTasks(
-          produce((draft) => {
-            draft.push(res.data.data);
-          })
-        );
-        onResetAddTaskState();
-      }
-    } catch (error) {
-      // todo trait error
-      console.log('error :>> ', error);
-    } finally {
-      setIsFetching.off();
-    }
-  }, [newTask]);
-
-  const deleteTask = useCallback(
-    async (taskId: string) => {
+  const addTask = useCallback(
+    async (newTask: Partial<Task>, onResetAddTaskState: () => void) => {
+      if (newTask.name === '') return;
       setIsFetching.on();
       try {
-        const res = await instance().delete(TASK_URL + taskId);
-
-        if (res.status === 204)
-          setTasks(tasks?.filter(({ _id }) => _id !== taskId));
+        const res = await instance().post(
+          TASK_URL + LIST_URL + selectedListId,
+          newTask
+        );
+        if (res.data?.ok) {
+          setTasks(
+            produce((draft) => {
+              draft.push(res.data.data);
+            })
+          );
+          onResetAddTaskState();
+        }
       } catch (error) {
         // todo trait error
         console.log('error :>> ', error);
@@ -210,7 +187,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
         setIsFetching.off();
       }
     },
-    [tasks]
+    [selectedListId]
   );
 
   // todo virer le form ici pour les taches le mettre dans la vue => update task state
@@ -245,6 +222,24 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [tasks]
   );
 
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      setIsFetching.on();
+      try {
+        const res = await instance().delete(TASK_URL + taskId);
+
+        if (res.status === 204)
+          setTasks(tasks?.filter(({ _id }) => _id !== taskId));
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [tasks]
+  );
+
   const isLoading = isFetchindList || isFecthing || isFetchindTask;
 
   useEffect(() => {
@@ -264,7 +259,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       lists,
       tasks,
       listForm,
-      newTask,
       addTask,
       addEditList,
       onClickOnEditList,
@@ -272,7 +266,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       deleteTask,
       updateTask,
       onAddListInputChange,
-      onAddTaskInputChange,
       setSelectedListId,
       onResetListFormState,
       selectedListId,
@@ -282,7 +275,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       lists,
       tasks,
       listForm,
-      newTask,
       isLoading,
       addTask,
       addEditList,
@@ -291,7 +283,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       deleteTask,
       updateTask,
       onAddListInputChange,
-      onAddTaskInputChange,
       setSelectedListId,
       onResetListFormState,
       selectedListId,

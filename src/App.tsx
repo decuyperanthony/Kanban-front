@@ -42,7 +42,7 @@ const App = () => {
   return (
     <div className="App">
       {isLoading && (
-        <Stack
+        <Box
           sx={{ backdropFilter: 'blur(3px)' }}
           display="flex"
           alignItems="center"
@@ -53,7 +53,7 @@ const App = () => {
           zIndex={100}
         >
           <CustomLoader />
-        </Stack>
+        </Box>
       )}
       <Box h="10px" />
       <HStack
