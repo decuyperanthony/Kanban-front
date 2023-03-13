@@ -1,48 +1,51 @@
 import { CheckIcon, CloseIcon, DeleteIcon, UnlockIcon } from '@chakra-ui/icons';
 import { Box, HStack, Text, useBoolean } from '@chakra-ui/react';
-import { FC, useState } from 'react';
-import { DeleteSvgIcon } from '../../assets/svg/icons';
-import { useAppContext } from '../../context/AppContext';
+import { ChangeEvent, FC, useCallback, useState } from 'react';
 
-import CustomButton from '../../ui/CustomButton';
+import { initTaskState, useAppContext } from '../../context/AppContext';
+import { Task } from '../../Models/task';
+
 import CustomIconButton from '../../ui/CustomIconButton';
 import CustomInput from '../../ui/CustomInput';
 
 const Tasks: FC = () => {
-  const {
-    tasks,
-    updatedTask,
-    updateTask,
-    updateTaskStatus,
-    setUpdatedTask,
-    onUpdateTaskInputChange,
-    deleteTask,
-  } = useAppContext();
+  const { tasks, updateTask, deleteTask } = useAppContext();
 
   const [isEditing, setIsEditing] = useBoolean();
   const [editTaskId, setEditTaskId] = useState('');
+  const [updatedTask, setUpdatedTask] =
+    useState<Omit<Task, '_id'>>(initTaskState);
+
+  const onResetUpdatedTaskState = () => setUpdatedTask(initTaskState);
+
+  const onUpdateTaskInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setUpdatedTask({ ...updatedTask, name: e.target.value });
+    },
+    [updatedTask]
+  );
 
   return (
     <>
       {!tasks.length && (
         <Box p={1}>aucune tâches en cours pour cette liste ...</Box>
       )}
-      {tasks?.map(({ name, _id, status }) => (
+      {tasks?.map((task) => (
         <HStack
           justify="space-between"
           p={3}
           border="1px solid"
           borderColor={'#E2E8F0'}
-          key={_id}
-          bg={status === 'DONE' ? '#E2E8F0' : undefined}
+          key={task._id}
+          bg={task.done ? '#E2E8F0' : undefined}
         >
           <HStack w={'100%'} align="center" minH={'40px'}>
-            {isEditing && editTaskId === _id ? (
+            {isEditing && editTaskId === task._id ? (
               <HStack w={'100%'} spacing={4}>
                 <Box flex={6}>
                   <CustomInput
                     onBlur={() => {
-                      updateTask(_id);
+                      updateTask(updatedTask, onResetUpdatedTaskState);
                       setIsEditing.off();
                     }}
                     onChange={(e) => onUpdateTaskInputChange(e)}
@@ -64,27 +67,35 @@ const Tasks: FC = () => {
                 borderRadius="sm"
                 _hover={{ bg: 'gray.100' }}
                 cursor="pointer"
-                textDecor={status === 'DONE' ? 'line-through' : undefined}
+                textDecor={task.done ? 'line-through' : undefined}
                 onClick={() => {
                   setIsEditing.on();
-                  setUpdatedTask({ name, status });
-                  setEditTaskId(_id);
+                  setUpdatedTask(task);
+                  setEditTaskId(task._id);
                 }}
               >
-                {name}
+                {task.name}
               </Text>
             )}
           </HStack>
           <CustomIconButton
             size="sm"
-            icon={status === 'OPEN' ? <CheckIcon /> : <UnlockIcon />}
-            isDisabled={isEditing && _id === editTaskId}
-            onClick={() => updateTaskStatus(_id, status)}
+            icon={task.done ? <UnlockIcon /> : <CheckIcon />}
+            isDisabled={isEditing && task._id === editTaskId}
+            onClick={() =>
+              updateTask(
+                {
+                  _id: task._id,
+                  done: !task.done,
+                },
+                onResetUpdatedTaskState
+              )
+            }
           />
           <CustomIconButton
             size="sm"
             icon={<DeleteIcon />}
-            onClick={() => deleteTask(_id)}
+            onClick={() => deleteTask(task._id)}
           />
         </HStack>
       ))}

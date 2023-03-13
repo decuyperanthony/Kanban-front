@@ -1,13 +1,19 @@
 import { FC } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
 import { useAppContext } from '../../context/AppContext';
+import CustomButton from '../../ui/CustomButton';
 type Props = {
   setIsAddingTaskToFalse: () => void;
+  setIsAddingOrEditingListToTrue: () => void;
 };
-const Lists: FC<Props> = ({ setIsAddingTaskToFalse }) => {
+const Lists: FC<Props> = ({
+  setIsAddingTaskToFalse,
+  setIsAddingOrEditingListToTrue,
+}) => {
   const { lists, setSelectedListId, selectedListId } = useAppContext();
+
   return (
-    <Flex>
+    <>
       {lists.map(({ title, _id }) => {
         const isSelected = selectedListId === _id;
         const border = '1px solid';
@@ -36,7 +42,16 @@ const Lists: FC<Props> = ({ setIsAddingTaskToFalse }) => {
           </Box>
         );
       })}
-    </Flex>
+      <Box px={2}>
+        <CustomButton
+          variant="outline"
+          colorScheme="blue"
+          onClick={setIsAddingOrEditingListToTrue}
+        >
+          nouvelle liste
+        </CustomButton>
+      </Box>
+    </>
   );
 };
 

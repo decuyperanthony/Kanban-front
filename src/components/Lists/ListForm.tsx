@@ -1,17 +1,25 @@
 import { CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { HStack } from '@chakra-ui/react';
-import { FC } from 'react';
+import { ChangeEvent, FC } from 'react';
 import { useAppContext } from '../../context/AppContext';
+import { List } from '../../Models/list';
 import CustomIconButton from '../../ui/CustomIconButton';
 import CustomInput from '../../ui/CustomInput';
 
 type Props = {
   setIsAddingOrEditingListToFalse: () => void;
+  onResetListFormState: () => void;
+  listForm: Partial<List>;
+  onAddListInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
-const ListForm: FC<Props> = ({ setIsAddingOrEditingListToFalse }) => {
-  const { addEditList, onAddListInputChange, listForm, onResetListFormState } =
-    useAppContext();
+const ListForm: FC<Props> = ({
+  setIsAddingOrEditingListToFalse,
+  onResetListFormState,
+  listForm,
+  onAddListInputChange,
+}) => {
+  const { addEditList } = useAppContext();
 
   return (
     <HStack>
@@ -31,7 +39,13 @@ const ListForm: FC<Props> = ({ setIsAddingOrEditingListToFalse }) => {
         icon={<CloseIcon />}
       />
       <CustomIconButton
-        onClick={() => addEditList(setIsAddingOrEditingListToFalse)}
+        onClick={() =>
+          addEditList(
+            listForm,
+            setIsAddingOrEditingListToFalse,
+            onResetListFormState
+          )
+        }
         icon={<CheckIcon />}
       />
     </HStack>
