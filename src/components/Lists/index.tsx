@@ -11,7 +11,6 @@ const Lists: FC<Props> = ({
   setIsAddingOrEditingListToTrue,
 }) => {
   const { lists, setSelectedListId, selectedListId } = useAppContext();
-  // const [isAddingOrEditingList, setIsAddingOrEditingList] = useBoolean();
 
   return (
     <>
@@ -43,7 +42,7 @@ const Lists: FC<Props> = ({
           </Box>
         );
       })}
-      <Box pr={2}>
+      <Box px={2}>
         <CustomButton
           variant="outline"
           colorScheme="blue"

@@ -23,7 +23,7 @@ const TaskForm: FC<Props> = ({ setIsAddingTask }) => {
     (e: ChangeEvent<HTMLInputElement>) => {
       setNewTask({ ...newTask, name: e.target.value });
     },
-    []
+    [newTask]
   );
 
   const onResetAddTaskState = () => setNewTask(initTaskState);

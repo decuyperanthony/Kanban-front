@@ -44,7 +44,7 @@ const TasksScreen = () => {
   );
 
   return (
-    <div>
+    <Box pos="relative">
       {isLoading && (
         <Box
           sx={{ backdropFilter: 'blur(3px)' }}
@@ -123,7 +123,7 @@ const TasksScreen = () => {
           />
         }
       />
-    </div>
+    </Box>
   );
 };
 
