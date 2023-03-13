@@ -20,11 +20,13 @@ type ResTaskAPI = {
   ok: true;
   data: Task[];
 };
+
 // todo move in utils
 export const initTaskState = {
   name: '',
   status: 'OPEN' as TaskStatus,
   done: false,
+  isPrioritized: false,
 };
 
 type Context = {
