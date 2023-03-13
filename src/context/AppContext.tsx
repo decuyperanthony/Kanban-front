@@ -10,12 +10,18 @@ import { useBoolean } from '@chakra-ui/react';
 import { useImmer } from 'use-immer';
 import produce from 'immer';
 
+// todo move this in folder api
+type ResListAPI = {
+  ok: true;
+  data: List[];
+};
+
 type ResTaskAPI = {
   ok: true;
   data: Task[];
 };
-
-const initTaskState = {
+// todo move in utils
+export const initTaskState = {
   name: '',
   status: 'OPEN' as TaskStatus,
 };
@@ -23,34 +29,26 @@ const initListState = {
   title: '',
 };
 
-type ResListAPI = {
-  ok: true;
-  data: List[];
-};
-
 type Context = {
   lists: List[];
   isLoading: boolean;
   tasks: Task[];
-  updatedTask: Omit<Task, '_id'>;
   selectedListId?: string;
   addTask: () => Promise<void>;
   addEditList: (setIsAddingOrEditingListToFalse: () => void) => Promise<void>;
   onClickOnEditList: () => void;
   onResetListFormState: () => void;
-
   newTask: Omit<Task, '_id'>;
   listForm: Omit<List, '_id'> & { _id?: string };
   onAddTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddListInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  updateTask: (id: string) => void;
-
   setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  setUpdatedTask: React.Dispatch<React.SetStateAction<Omit<Task, '_id'>>>;
-  onUpdateTaskInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   deleteTask: (taskId: string) => Promise<void>;
   deleteList: (onClosePopoverDeletelist: () => void) => Promise<void>;
-  updateTaskStatus: (taskId: string, status: TaskStatus) => Promise<void>;
+  updateTask: (
+    task: Partial<Task>,
+    onResetUpdatedTaskState: () => void
+  ) => Promise<void>;
 };
 
 const AppContext = createContext<Context>({} as Context);
@@ -71,8 +69,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
   const [isFecthing, setIsFetching] = useBoolean();
 
   const [newTask, setNewTask] = useState<Omit<Task, '_id'>>(initTaskState);
-  const [updatedTask, setUpdatedTask] =
-    useState<Omit<Task, '_id'>>(initTaskState);
+
   const [listForm, setListForm] = useState<
     Omit<List, '_id'> & { _id?: string }
   >(initListState);
@@ -85,13 +82,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
   const { data: resTask, isLoading: isFetchindTask } = useSWR<ResTaskAPI>(
     selectedListId ? LIST_URL + selectedListId + TASK_URL : null,
     fetcher
-  );
-
-  const onUpdateTaskInputChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setUpdatedTask({ ...updatedTask, name: e.target.value });
-    },
-    [updatedTask]
   );
 
   const onAddListInputChange = useCallback(
@@ -112,7 +102,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     []
   );
 
-  const onResetUpdatedTaskState = () => setUpdatedTask(initTaskState);
   const onResetAddTaskState = () => setNewTask(initTaskState);
   const onResetListFormState = () => setListForm(initListState);
 
@@ -224,49 +213,26 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [tasks]
   );
 
-  const updateTaskState = useCallback(
-    (task: Partial<Task>) => {
-      setTasks(
-        tasks.map((proj) =>
-          proj._id === task._id ? { ...proj, ...task } : { ...proj }
-        )
-      );
-    },
-    [tasks]
-  );
+  // todo virer le form ici pour les taches le mettre dans la vue => update task state
+  // todo faire pareil pour le newTask histoire d'alléger le contexte
+  // todo faire toute cette refacto pour les listes aussi
+  // todo virer les onChange
 
   const updateTask = useCallback(
-    async (taskId: string) => {
+    async (task: Partial<Task>, onResetUpdatedTaskState: () => void) => {
       setIsFetching.on();
       try {
-        const res = await instance().put(TASK_URL + taskId, updatedTask);
+        const res = await instance().put(TASK_URL + task._id, task);
 
-        if (res.data?.ok) updateTaskState(res.data.data);
-        onResetUpdatedTaskState();
-      } catch (error) {
-        // todo trait error
-        console.log('error :>> ', error);
-      } finally {
-        setIsFetching.off();
-      }
-    },
-    [tasks, updatedTask]
-  );
-
-  const updateTaskStatus = useCallback(
-    async (taskId: string, status: TaskStatus) => {
-      setIsFetching.on();
-      const updateStatus = status === 'DONE' ? 'OPEN' : 'DONE';
-
-      try {
-        const res = await instance().put(TASK_URL + taskId, {
-          status: updateStatus,
-        });
-        console.log('res :>> ', res);
-        // todo faire un update task
-        // todo faire un update list
         if (res.data.ok) {
-          updateTaskState(res.data.data);
+          const updateTask = res.data.data;
+          setTasks(
+            tasks.map((proj) =>
+              proj._id === updateTask._id
+                ? { ...proj, ...updateTask }
+                : { ...proj }
+            )
+          );
         }
         onResetUpdatedTaskState();
       } catch (error) {
@@ -299,18 +265,14 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       tasks,
       listForm,
       newTask,
-      updatedTask,
       addTask,
       addEditList,
       onClickOnEditList,
       deleteList,
       deleteTask,
       updateTask,
-      updateTaskStatus,
       onAddListInputChange,
       onAddTaskInputChange,
-      onUpdateTaskInputChange,
-      setUpdatedTask,
       setSelectedListId,
       onResetListFormState,
       selectedListId,
@@ -321,7 +283,6 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       tasks,
       listForm,
       newTask,
-      updatedTask,
       isLoading,
       addTask,
       addEditList,
@@ -329,11 +290,8 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       deleteList,
       deleteTask,
       updateTask,
-      updateTaskStatus,
       onAddListInputChange,
       onAddTaskInputChange,
-      onUpdateTaskInputChange,
-      setUpdatedTask,
       setSelectedListId,
       onResetListFormState,
       selectedListId,
