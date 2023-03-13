@@ -87,16 +87,10 @@ const TasksScreen = () => {
         }}
         spacing={3}
       >
-        <Lists setIsAddingTaskToFalse={setIsAddingTask.off} />
-        <Box pr={2}>
-          <CustomButton
-            variant="outline"
-            colorScheme="blue"
-            onClick={setIsAddingOrEditingList.on}
-          >
-            nouvelle liste
-          </CustomButton>
-        </Box>
+        <Lists
+          setIsAddingOrEditingListToTrue={setIsAddingOrEditingList.on}
+          setIsAddingTaskToFalse={setIsAddingTask.off}
+        />
       </HStack>
       {!isAddingOrEditingList && (
         // TODO REFACTO THIS
