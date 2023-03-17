@@ -9,12 +9,14 @@ const border = '1px solid';
 type ListItemProps = {
   onClick: () => void;
   isSelected: boolean;
+  isFavorite?: boolean;
 };
 
 const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
   onClick,
   children,
   isSelected,
+  isFavorite,
 }) => (
   <Box
     cursor={'pointer'}
@@ -22,7 +24,7 @@ const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
     borderLeft={isSelected ? border : ''}
     borderRight={isSelected ? border : ''}
     borderBottom={!isSelected ? border : ''}
-    borderColor="#E2E8F0"
+    borderColor={isFavorite && isSelected ? 'orange' : '#E2E8F0'}
     p={3}
     onClick={onClick}
   >
@@ -52,6 +54,7 @@ const Lists: FC<ListsProps> = ({
           setSelectedListId(undefined);
         }}
         isSelected={isFavoriteListSelected}
+        isFavorite
       >
         <StarIcon color={'orange'} boxSize={5} />
       </ListItem>
