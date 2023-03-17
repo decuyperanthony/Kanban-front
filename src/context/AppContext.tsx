@@ -34,6 +34,7 @@ type Context = {
   tasks: Task[];
   selectedListId?: string;
   isLoading: boolean;
+  getPrioritizedTasks: () => void;
   addTask: (
     newTask: Partial<Task>,
     onResetAddTaskState: () => void
@@ -75,6 +76,14 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     selectedListId ? LIST_URL + selectedListId + TASK_URL : null,
     fetcher
   );
+
+  const getPrioritizedTasks = useCallback(async () => {
+    const res = await instance().get(TASK_URL + '?isPrioritized=true');
+    console.log('res :>> ', res);
+    if (res.data.ok) {
+      setTasks(res.data.data);
+    }
+  }, []);
 
   const addEditList = useCallback(
     async (
@@ -178,7 +187,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     async (task: Partial<Task>, onResetUpdatedTaskState: () => void) => {
       setIsFetching.on();
       try {
-        const res = await instance().put(TASK_URL + task._id, task);
+        const res = await instance().put(TASK_URL + '/' + task._id, task);
 
         if (res.data.ok) {
           const updateTask = res.data.data;
@@ -205,7 +214,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     async (taskId: string) => {
       setIsFetching.on();
       try {
-        const res = await instance().delete(TASK_URL + taskId);
+        const res = await instance().delete(TASK_URL + '/' + taskId);
 
         if (res.status === 204)
           setTasks(tasks?.filter(({ _id }) => _id !== taskId));
@@ -237,6 +246,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       isLoading,
       lists,
       tasks,
+      getPrioritizedTasks,
       addTask,
       addEditList,
       deleteList,
@@ -249,7 +259,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       isLoading,
       lists,
       tasks,
-      isLoading,
+      getPrioritizedTasks,
       addTask,
       addEditList,
       deleteList,

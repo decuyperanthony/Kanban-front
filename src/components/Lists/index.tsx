@@ -1,44 +1,72 @@
-import { FC } from 'react';
+import { FC, PropsWithChildren } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import { useAppContext } from '../../context/AppContext';
 import CustomButton from '../../ui/CustomButton';
-type Props = {
+import { StarIcon } from '@chakra-ui/icons';
+
+const border = '1px solid';
+
+type ListItemProps = {
+  onClick: () => void;
+  isSelected: boolean;
+};
+
+const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
+  onClick,
+  children,
+  isSelected,
+}) => (
+  <Box
+    cursor={'pointer'}
+    borderTop={isSelected ? border : ''}
+    borderLeft={isSelected ? border : ''}
+    borderRight={isSelected ? border : ''}
+    borderBottom={!isSelected ? border : ''}
+    borderColor="#E2E8F0"
+    p={3}
+    onClick={onClick}
+  >
+    {children}
+  </Box>
+);
+
+type ListsProps = {
   setIsAddingTaskToFalse: () => void;
   setIsAddingOrEditingListToTrue: () => void;
 };
-const Lists: FC<Props> = ({
+
+const Lists: FC<ListsProps> = ({
   setIsAddingTaskToFalse,
   setIsAddingOrEditingListToTrue,
 }) => {
-  const { lists, setSelectedListId, selectedListId } = useAppContext();
+  const { lists, setSelectedListId, selectedListId, getPrioritizedTasks } =
+    useAppContext();
+  const isFavoriteListSelect = !selectedListId;
 
   return (
     <>
-      {/* <Box
+      <ListItem
         onClick={() => {
           setIsAddingTaskToFalse();
-          setSelectedListId('FAVORITE'); // todo
+          getPrioritizedTasks();
+          setSelectedListId(undefined);
         }}
+        isSelected={isFavoriteListSelect}
       >
-        Hello
-      </Box> */}
+        <StarIcon color={'orange'} boxSize={5} />
+      </ListItem>
+
       {lists.map(({ title, _id }) => {
         const isSelected = selectedListId === _id;
-        const border = '1px solid';
+
         return (
-          <Box
-            cursor="pointer"
-            borderTop={isSelected ? border : ''}
-            borderLeft={isSelected ? border : ''}
-            borderRight={isSelected ? border : ''}
-            borderBottom={!isSelected ? border : ''}
-            borderColor="#E2E8F0"
+          <ListItem
+            key={_id}
             onClick={() => {
               setIsAddingTaskToFalse();
               setSelectedListId(_id);
             }}
-            key={_id}
-            p={3}
+            isSelected={isSelected}
           >
             <Text
               noOfLines={1}
@@ -47,7 +75,7 @@ const Lists: FC<Props> = ({
             >
               {title}
             </Text>
-          </Box>
+          </ListItem>
         );
       })}
       <Box px={2}>
