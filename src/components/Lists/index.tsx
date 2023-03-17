@@ -41,7 +41,7 @@ const Lists: FC<ListsProps> = ({
 }) => {
   const { lists, setSelectedListId, selectedListId, getPrioritizedTasks } =
     useAppContext();
-  const isFavoriteListSelect = !selectedListId;
+  const isFavoriteListSelected = !selectedListId;
 
   return (
     <>
@@ -51,7 +51,7 @@ const Lists: FC<ListsProps> = ({
           getPrioritizedTasks();
           setSelectedListId(undefined);
         }}
-        isSelected={isFavoriteListSelect}
+        isSelected={isFavoriteListSelected}
       >
         <StarIcon color={'orange'} boxSize={5} />
       </ListItem>

@@ -79,7 +79,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
 
   const getPrioritizedTasks = useCallback(async () => {
     const res = await instance().get(TASK_URL + '?isPrioritized=true');
-    console.log('res :>> ', res);
+
     if (res.data.ok) {
       setTasks(res.data.data);
     }
@@ -141,8 +141,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
             ({ _id }) => _id !== selectedListId
           );
           setLists(lists?.filter(({ _id }) => _id !== selectedListId));
-          // todo au success set la liste précédente de celle delete ou si pas possible
-          // set la 0
+
           setSelectedListId(updatedLists[0]._id);
           onClosePopoverDeletelist();
         }
@@ -198,6 +197,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
                 : { ...proj }
             )
           );
+          if (!selectedListId) getPrioritizedTasks();
         }
         onResetUpdatedTaskState();
       } catch (error) {
