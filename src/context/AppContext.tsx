@@ -35,6 +35,7 @@ type Context = {
   selectedListId?: string;
   isLoading: boolean;
   getPrioritizedTasks: () => void;
+  updateAllTasksFromList: (field: Partial<Task>) => void;
   addTask: (
     newTask: Partial<Task>,
     onResetAddTaskState: () => void
@@ -128,6 +129,32 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       }
     },
     [selectedListId, lists]
+  );
+
+  const updateAllTasksFromList = useCallback(
+    async (field: Partial<Task>) => {
+      setIsFetching.on();
+      try {
+        const res = await instance().put(
+          LIST_URL + 'tasks/all/' + selectedListId,
+          field
+        );
+        if (res.data?.ok) {
+          setTasks(
+            tasks.map((task) => ({
+              ...task,
+              done: false,
+            }))
+          );
+        }
+      } catch (error) {
+        // todo trait error
+        console.log('error :>> ', error);
+      } finally {
+        setIsFetching.off();
+      }
+    },
+    [tasks]
   );
 
   const deleteList = useCallback(
@@ -249,6 +276,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       getPrioritizedTasks,
       addTask,
       addEditList,
+      updateAllTasksFromList,
       deleteList,
       deleteTask,
       updateTask,
@@ -262,6 +290,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       getPrioritizedTasks,
       addTask,
       addEditList,
+      updateAllTasksFromList,
       deleteList,
       deleteTask,
       updateTask,

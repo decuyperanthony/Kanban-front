@@ -16,7 +16,7 @@ import { List } from '../Models/list';
 
 import CustomButtonPopover from '../ui/CustomPopover';
 import CustomIconButton from '../ui/CustomIconButton';
-import { AddIcon, CalendarIcon } from '@chakra-ui/icons';
+import { AddIcon, CalendarIcon, RepeatIcon } from '@chakra-ui/icons';
 
 const initListState = {
   title: '',
@@ -25,7 +25,13 @@ const initListState = {
 const TasksScreen = () => {
   const [listForm, setListForm] = useImmer<Partial<List>>(initListState);
 
-  const { isLoading, deleteList, lists, selectedListId } = useAppContext();
+  const {
+    isLoading,
+    deleteList,
+    lists,
+    selectedListId,
+    updateAllTasksFromList,
+  } = useAppContext();
 
   const [isAddingOrEditingList, setIsAddingOrEditingList] = useBoolean();
   const [isAddingTask, setIsAddingTask] = useBoolean();
@@ -82,7 +88,7 @@ const TasksScreen = () => {
             {isAddingTask ? (
               <TaskForm setIsAddingTask={setIsAddingTask} />
             ) : (
-              <HStack>
+              <HStack maxW="99vh" overflow="auto">
                 <HStack cursor="pointer" onClick={setIsAddingTask.on}>
                   <CalendarIcon />
 
@@ -104,6 +110,11 @@ const TasksScreen = () => {
                 >
                   Éditer la liste
                 </CustomButton>
+                <CustomIconButton
+                  onClick={() => updateAllTasksFromList({ done: false })}
+                  size="sm"
+                  icon={<RepeatIcon />}
+                />
               </HStack>
             )}
           </HStack>
