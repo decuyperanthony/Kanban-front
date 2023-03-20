@@ -192,7 +192,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       try {
         const res = await instance().post(
           TASK_URL + LIST_URL + selectedListId,
-          newTask
+          { ...newTask, orderIndex: tasks.length + 1 }
         );
         if (res.data?.ok) {
           setTasks(
@@ -209,7 +209,7 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
         setIsFetching.off();
       }
     },
-    [selectedListId]
+    [selectedListId, tasks]
   );
 
   const updateTask = useCallback(
