@@ -1,4 +1,6 @@
-import { ChangeEvent, FC } from 'react';
+import type { Identifier } from 'dnd-core';
+
+import { ChangeEvent, forwardRef, ForwardRefRenderFunction } from 'react';
 import {
   CheckIcon,
   CloseIcon,
@@ -13,7 +15,13 @@ import { Task } from '../../Models/task';
 
 import CustomIconButton from '../../ui/CustomIconButton';
 import CustomInput from '../../ui/CustomInput';
-type Props = {
+
+type DraggableProps = {
+  handlerId?: Identifier | null;
+  isDragging?: boolean;
+};
+
+export type TaskCardProps = {
   task: Task;
   setIsEditing: {
     on: () => void;
@@ -26,27 +34,36 @@ type Props = {
   setEditTaskId: React.Dispatch<React.SetStateAction<string>>;
   onResetUpdatedTaskState: () => void;
   onUpdateTaskInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
-};
+} & DraggableProps;
 
-const TaskCard: FC<Props> = ({
-  task,
-  setIsEditing,
-  isEditing,
-  updatedTask,
-  setUpdatedTask,
-  editTaskId,
-  setEditTaskId,
-  onResetUpdatedTaskState,
-  onUpdateTaskInputChange,
-}) => {
+const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
+  { handlerId, isDragging, ...taskProps },
+  ref
+) => {
   const { updateTask, deleteTask } = useAppContext();
+
+  const {
+    task,
+    setIsEditing,
+    isEditing,
+    updatedTask,
+    setUpdatedTask,
+    editTaskId,
+    setEditTaskId,
+    onResetUpdatedTaskState,
+    onUpdateTaskInputChange,
+  } = taskProps;
+
   return (
     <HStack
+      ref={ref}
+      data-handler-id={handlerId}
+      opacity={isDragging ? 0.2 : 1}
       justify="space-between"
+      cursor={'grab'}
       p={3}
       border="1px solid"
       borderColor={'#E2E8F0'}
-      key={task._id}
       bg={task.done ? '#E2E8F0' : undefined}
     >
       <HStack w={'100%'} align="center" minH={'40px'}>
@@ -124,4 +141,4 @@ const TaskCard: FC<Props> = ({
     </HStack>
   );
 };
-export default TaskCard;
+export default forwardRef(TaskCard);

@@ -4,7 +4,7 @@ import { ChangeEvent, FC, useCallback, useState } from 'react';
 import { initTaskState, useAppContext } from '../../context/AppContext';
 import { Task } from '../../Models/task';
 
-import TaskCard from './TaskCard';
+import DraggableTaskCard from './DraggableTaskCard';
 
 const Tasks: FC = () => {
   const { tasks } = useAppContext();
@@ -39,9 +39,18 @@ const Tasks: FC = () => {
       {!tasks.length && (
         <Box p={1}>aucune tâches en cours pour cette liste ...</Box>
       )}
-      {tasks?.map((task) => (
-        <TaskCard key={task._id} task={task} {...taskProps} />
-      ))}
+
+      {tasks
+        .slice()
+        ?.sort((a, b) => a?.orderIndex - b?.orderIndex)
+        ?.map((task, index) => (
+          <DraggableTaskCard
+            key={task._id}
+            cardIndex={index}
+            task={task}
+            {...taskProps}
+          />
+        ))}
     </>
   );
 };

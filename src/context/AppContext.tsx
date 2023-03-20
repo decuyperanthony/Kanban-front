@@ -24,9 +24,10 @@ type ResTaskAPI = {
 // todo move in utils
 export const initTaskState = {
   name: '',
-  status: 'OPEN' as TaskStatus,
+  status: 'NONE' as TaskStatus,
   done: false,
   isPrioritized: false,
+  orderIndex: -1,
 };
 
 type Context = {
@@ -52,6 +53,8 @@ type Context = {
   ) => Promise<void>;
   deleteList: (onClosePopoverDeletelist: () => void) => Promise<void>;
   setSelectedListId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  moveTask: (startIndex: number, endIndex: number) => void;
+  updateTasksOrderIndexFromList: () => void;
 };
 
 const AppContext = createContext<Context>({} as Context);
@@ -255,6 +258,34 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
     [tasks]
   );
 
+  const moveTask = useCallback(
+    (startIndex: number, endIndex: number) => {
+      const draftTasks = Array.from(tasks);
+      const [removed] = draftTasks.splice(startIndex, 1);
+      draftTasks.splice(endIndex, 0, removed);
+      const newTasks = draftTasks.map((task, index) => ({
+        ...task,
+        orderIndex: index,
+      }));
+
+      setTasks(newTasks);
+    },
+    [tasks]
+  );
+
+  const updateTasksOrderIndexFromList = useCallback(async () => {
+    setIsFetching.on();
+    try {
+      // todo trait success ??
+      await instance().put(LIST_URL + 'tasks/orderIndex', tasks);
+    } catch (error) {
+      // todo trait error
+      console.log('error :>> ', error);
+    } finally {
+      setIsFetching.off();
+    }
+  }, [tasks]);
+
   const isLoading = isFetchindList || isFecthing || isFetchindTask;
 
   useEffect(() => {
@@ -277,10 +308,12 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       addTask,
       addEditList,
       updateAllTasksFromList,
+      updateTasksOrderIndexFromList,
       deleteList,
       deleteTask,
       updateTask,
       setSelectedListId,
+      moveTask,
       selectedListId,
     }),
     [
@@ -291,10 +324,12 @@ const AppContextWrapper: FC<Props> = ({ children }) => {
       addTask,
       addEditList,
       updateAllTasksFromList,
+      updateTasksOrderIndexFromList,
       deleteList,
       deleteTask,
       updateTask,
       setSelectedListId,
+      moveTask,
       selectedListId,
     ]
   );
