@@ -69,6 +69,9 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
     onUpdateTaskInputChange,
   } = taskProps;
 
+  const edit = isEditing && task._id === editTaskId;
+  // todo refacto dans un tableau les items du menu pour avoir qu un
+
   return (
     <HStack
       ref={ref}
@@ -78,7 +81,8 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
       cursor={'grab'}
       p={3}
       border="1px solid"
-      borderColor={'#E2E8F0'}
+      borderColor={task.isPrioritized ? 'orange' : '#E2E8F0'}
+      color={task.isPrioritized ? 'orange' : 'black'}
       bg={task.done ? '#E2E8F0' : isDragging ? 'blue' : undefined}
     >
       <HStack w={'100%'} align="center" minH={'40px'}>
@@ -126,7 +130,7 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
           <CustomIconButton
             size="sm"
             icon={task.done ? <UnlockIcon /> : <CheckIcon />}
-            isDisabled={isEditing && task._id === editTaskId}
+            isDisabled={edit}
             onClick={() =>
               updateTask(
                 {
@@ -142,7 +146,7 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
             icon={
               task.isPrioritized ? <StarIcon color={'orange'} /> : <StarIcon />
             }
-            isDisabled={isEditing && task._id === editTaskId}
+            isDisabled={edit}
             onClick={() =>
               updateTask(
                 {
@@ -173,7 +177,7 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
               <MenuItem
                 // size="sm"
                 icon={task.done ? <UnlockIcon /> : <CheckIcon />}
-                isDisabled={isEditing && task._id === editTaskId}
+                isDisabled={edit}
                 onClick={() =>
                   updateTask(
                     {
@@ -195,7 +199,7 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
                     <StarIcon />
                   )
                 }
-                isDisabled={isEditing && task._id === editTaskId}
+                isDisabled={edit}
                 onClick={() =>
                   updateTask(
                     {
