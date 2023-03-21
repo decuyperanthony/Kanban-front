@@ -2,13 +2,28 @@ import type { Identifier } from 'dnd-core';
 
 import { ChangeEvent, forwardRef, ForwardRefRenderFunction } from 'react';
 import {
+  AddIcon,
   CheckIcon,
   CloseIcon,
   DeleteIcon,
+  DragHandleIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  HamburgerIcon,
+  RepeatIcon,
   StarIcon,
   UnlockIcon,
 } from '@chakra-ui/icons';
-import { Box, HStack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  HStack,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+} from '@chakra-ui/react';
 
 import { useAppContext } from '../../context/AppContext';
 import { Task } from '../../Models/task';
@@ -58,15 +73,16 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
     <HStack
       ref={ref}
       data-handler-id={handlerId}
-      opacity={isDragging ? 0.2 : 1}
+      opacity={isDragging ? 0 : 1}
       justify="space-between"
       cursor={'grab'}
       p={3}
       border="1px solid"
       borderColor={'#E2E8F0'}
-      bg={task.done ? '#E2E8F0' : undefined}
+      bg={task.done ? '#E2E8F0' : isDragging ? 'blue' : undefined}
     >
       <HStack w={'100%'} align="center" minH={'40px'}>
+        <DragHandleIcon />
         {isEditing && editTaskId === task._id ? (
           <HStack w={'100%'} spacing={4}>
             <Box flex={6}>
@@ -105,39 +121,107 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
           </Text>
         )}
       </HStack>
-      <CustomIconButton
-        size="sm"
-        icon={task.done ? <UnlockIcon /> : <CheckIcon />}
-        isDisabled={isEditing && task._id === editTaskId}
-        onClick={() =>
-          updateTask(
-            {
-              _id: task._id,
-              done: !task.done,
-            },
-            onResetUpdatedTaskState
-          )
-        }
-      />
-      <CustomIconButton
-        size="sm"
-        icon={task.isPrioritized ? <StarIcon color={'orange'} /> : <StarIcon />}
-        isDisabled={isEditing && task._id === editTaskId}
-        onClick={() =>
-          updateTask(
-            {
-              _id: task._id,
-              isPrioritized: !task.isPrioritized,
-            },
-            onResetUpdatedTaskState
-          )
-        }
-      />
-      <CustomIconButton
-        size="sm"
-        icon={<DeleteIcon />}
-        onClick={() => deleteTask(task._id)}
-      />
+      <Box display={['none', 'block']}>
+        <HStack>
+          <CustomIconButton
+            size="sm"
+            icon={task.done ? <UnlockIcon /> : <CheckIcon />}
+            isDisabled={isEditing && task._id === editTaskId}
+            onClick={() =>
+              updateTask(
+                {
+                  _id: task._id,
+                  done: !task.done,
+                },
+                onResetUpdatedTaskState
+              )
+            }
+          />
+          <CustomIconButton
+            size="sm"
+            icon={
+              task.isPrioritized ? <StarIcon color={'orange'} /> : <StarIcon />
+            }
+            isDisabled={isEditing && task._id === editTaskId}
+            onClick={() =>
+              updateTask(
+                {
+                  _id: task._id,
+                  isPrioritized: !task.isPrioritized,
+                },
+                onResetUpdatedTaskState
+              )
+            }
+          />
+          <CustomIconButton
+            size="sm"
+            icon={<DeleteIcon />}
+            onClick={() => deleteTask(task._id)}
+          />
+        </HStack>
+      </Box>
+      <Box display={['block', 'none']}>
+        <HStack>
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              aria-label="Options"
+              icon={<HamburgerIcon />}
+              variant="outline"
+            />
+            <MenuList>
+              <MenuItem
+                // size="sm"
+                icon={task.done ? <UnlockIcon /> : <CheckIcon />}
+                isDisabled={isEditing && task._id === editTaskId}
+                onClick={() =>
+                  updateTask(
+                    {
+                      _id: task._id,
+                      done: !task.done,
+                    },
+                    onResetUpdatedTaskState
+                  )
+                }
+                command="⌘T"
+              >
+                {task.done ? 'à faire' : 'fait'}
+              </MenuItem>
+              <MenuItem
+                icon={
+                  task.isPrioritized ? (
+                    <StarIcon color={'orange'} />
+                  ) : (
+                    <StarIcon />
+                  )
+                }
+                isDisabled={isEditing && task._id === editTaskId}
+                onClick={() =>
+                  updateTask(
+                    {
+                      _id: task._id,
+                      isPrioritized: !task.isPrioritized,
+                    },
+                    onResetUpdatedTaskState
+                  )
+                }
+                command="⌘N"
+              >
+                {task.isPrioritized
+                  ? 'enlever des favoris'
+                  : 'ajouter aux favoris'}
+              </MenuItem>
+              <MenuItem
+                icon={<DeleteIcon />}
+                onClick={() => deleteTask(task._id)}
+                command="⌘⇧N"
+              >
+                supprimer
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </HStack>
+      </Box>
     </HStack>
   );
 };
