@@ -23,6 +23,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useColorMode,
 } from '@chakra-ui/react';
 
 import { useAppContext } from '../../context/AppContext';
@@ -55,6 +56,8 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
   { handlerId, isDragging, ...taskProps },
   ref
 ) => {
+  const { colorMode } = useColorMode();
+
   const { updateTask, deleteTask } = useAppContext();
 
   const {
@@ -69,6 +72,8 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
     onUpdateTaskInputChange,
   } = taskProps;
 
+  const isDarkMode = colorMode === 'dark';
+
   const edit = isEditing && task._id === editTaskId;
   // todo refacto dans un tableau les items du menu pour avoir qu un
 
@@ -79,11 +84,12 @@ const TaskCard: ForwardRefRenderFunction<HTMLDivElement, TaskCardProps> = (
       opacity={isDragging ? 0 : 1}
       justify="space-between"
       cursor={'grab'}
+      borderRadius={'xl'}
       p={3}
       border="1px solid"
-      borderColor={task.isPrioritized ? 'orange' : '#E2E8F0'}
-      color={task.isPrioritized ? 'orange' : 'black'}
-      bg={task.done ? '#E2E8F0' : isDragging ? 'blue' : undefined}
+      borderColor={task.isPrioritized ? 'orange' : '#86b5f3'}
+      color={task.isPrioritized ? 'orange' : isDarkMode ? 'white' : 'black'}
+      bg={task.done ? '#86b5f3' : isDragging ? 'blue' : undefined}
     >
       <HStack w={'100%'} align="center" minH={'40px'}>
         <DragHandleIcon />

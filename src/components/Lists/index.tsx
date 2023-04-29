@@ -26,6 +26,7 @@ const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
     borderBottom={!isSelected ? border : ''}
     borderColor={isFavorite && isSelected ? 'orange' : '#E2E8F0'}
     p={3}
+    borderTopRadius={'xl'}
     onClick={onClick}
   >
     {children}
