@@ -49,6 +49,8 @@ const TasksScreen = () => {
     [listForm]
   );
 
+  const isFavoriteListSelected = !selectedListId;
+
   return (
     <Box pos="relative">
       {isLoading && (
@@ -84,40 +86,44 @@ const TasksScreen = () => {
       </HStack>
       {!isAddingOrEditingList && (
         <Stack>
-          <HStack mt={2} px={2} minH="46px">
-            {isAddingTask ? (
-              <TaskForm setIsAddingTask={setIsAddingTask} />
-            ) : (
-              <HStack maxW="99vh" overflow="auto">
-                <HStack cursor="pointer" onClick={setIsAddingTask.on}>
-                  <CalendarIcon />
+          {!isFavoriteListSelected ? (
+            <HStack mt={2} px={2} minH="48px">
+              {isAddingTask ? (
+                <TaskForm setIsAddingTask={setIsAddingTask} />
+              ) : (
+                <HStack maxW="99vh" overflow="auto">
+                  <HStack cursor="pointer" onClick={setIsAddingTask.on}>
+                    <CalendarIcon />
 
-                  <CustomIconButton size="sm" icon={<AddIcon />} />
+                    <CustomIconButton size="sm" icon={<AddIcon />} />
+                  </HStack>
+                  <CustomButtonPopover
+                    buttonLabel="Supprimer la liste "
+                    onConfirm={deleteList}
+                    confirmMessage="Êtes-vous sûrs de vouloir supprimer la liste ? Cela effecera toute(s) le(s) tache(s)"
+                  />
+
+                  <CustomButton
+                    onClick={() => {
+                      onClickOnEditList();
+                      setIsAddingOrEditingList.on();
+                    }}
+                    size="sm"
+                    colorScheme="blue"
+                  >
+                    Éditer la liste
+                  </CustomButton>
+                  <CustomIconButton
+                    onClick={() => updateAllTasksFromList({ done: false })}
+                    size="sm"
+                    icon={<RepeatIcon />}
+                  />
                 </HStack>
-                <CustomButtonPopover
-                  buttonLabel="Supprimer la liste "
-                  onConfirm={deleteList}
-                  confirmMessage="Êtes-vous sûrs de vouloir supprimer la liste ? Cela effecera toute(s) le(s) tache(s)"
-                />
-
-                <CustomButton
-                  onClick={() => {
-                    onClickOnEditList();
-                    setIsAddingOrEditingList.on();
-                  }}
-                  size="sm"
-                  colorScheme="blue"
-                >
-                  Éditer la liste
-                </CustomButton>
-                <CustomIconButton
-                  onClick={() => updateAllTasksFromList({ done: false })}
-                  size="sm"
-                  icon={<RepeatIcon />}
-                />
-              </HStack>
-            )}
-          </HStack>
+              )}
+            </HStack>
+          ) : (
+            <Box mt={2} px={2} h="48px" />
+          )}
           <Tasks />
         </Stack>
       )}
