@@ -3,6 +3,7 @@ import { Box, Text } from '@chakra-ui/react';
 import { useAppContext } from '../../context/AppContext';
 import CustomButton from '../../ui/CustomButton';
 import { StarIcon } from '@chakra-ui/icons';
+import { Link } from 'react-router-dom';
 
 const border = '1px solid';
 
@@ -10,6 +11,7 @@ type ListItemProps = {
   onClick: () => void;
   isSelected: boolean;
   isFavorite?: boolean;
+  listId: string | 'favorite';
 };
 
 const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
@@ -17,20 +19,23 @@ const ListItem: FC<PropsWithChildren<ListItemProps>> = ({
   children,
   isSelected,
   isFavorite,
+  listId,
 }) => (
-  <Box
-    cursor={'pointer'}
-    borderTop={isSelected ? border : ''}
-    borderLeft={isSelected ? border : ''}
-    borderRight={isSelected ? border : ''}
-    borderBottom={!isSelected ? border : ''}
-    borderColor={isFavorite && isSelected ? 'orange' : '#E2E8F0'}
-    p={3}
-    borderTopRadius={'xl'}
-    onClick={onClick}
-  >
-    {children}
-  </Box>
+  <Link to={`/${listId}`}>
+    <Box
+      cursor={'pointer'}
+      borderTop={isSelected ? border : ''}
+      borderLeft={isSelected ? border : ''}
+      borderRight={isSelected ? border : ''}
+      borderBottom={!isSelected ? border : ''}
+      borderColor={isFavorite && isSelected ? 'orange' : '#E2E8F0'}
+      p={3}
+      borderTopRadius={'xl'}
+      onClick={onClick}
+    >
+      {children}
+    </Box>
+  </Link>
 );
 
 type ListsProps = {
@@ -49,6 +54,7 @@ const Lists: FC<ListsProps> = ({
   return (
     <>
       <ListItem
+        listId={'favorite'}
         onClick={() => {
           setIsAddingTaskToFalse();
           getPrioritizedTasks();
@@ -65,6 +71,7 @@ const Lists: FC<ListsProps> = ({
 
         return (
           <ListItem
+            listId={_id}
             key={_id}
             onClick={() => {
               setIsAddingTaskToFalse();

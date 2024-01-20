@@ -11,12 +11,13 @@ import ListForm from '../components/Lists/ListForm';
 import CustomModal from '../ui/CustomModal';
 import CustomButton from '../ui/CustomButton';
 import { useImmer } from 'use-immer';
-import { ChangeEvent, useCallback } from 'react';
+import { ChangeEvent, useCallback, useEffect } from 'react';
 import { List } from '../Models/list';
 
 import CustomButtonPopover from '../ui/CustomPopover';
 import CustomIconButton from '../ui/CustomIconButton';
 import { AddIcon, CalendarIcon, RepeatIcon } from '@chakra-ui/icons';
+import { useParams } from 'react-router-dom';
 
 const initListState = {
   title: '',
@@ -30,8 +31,11 @@ const TasksScreen = () => {
     deleteList,
     lists,
     selectedListId,
+    setSelectedListId,
     updateAllTasksFromList,
   } = useAppContext();
+
+  const { listId } = useParams();
 
   const [isAddingOrEditingList, setIsAddingOrEditingList] = useBoolean();
   const [isAddingTask, setIsAddingTask] = useBoolean();
@@ -50,6 +54,14 @@ const TasksScreen = () => {
   );
 
   const isFavoriteListSelected = !selectedListId;
+
+  useEffect(() => {
+    if (listId) {
+      setSelectedListId(listId);
+    }
+  }, [listId, selectedListId]);
+
+  console.log('selectedListId', selectedListId);
 
   return (
     <Box pos="relative">
