@@ -1,4 +1,4 @@
-import { FC, ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 import React, { createContext, useContext, useMemo } from 'react';
